@@ -17,8 +17,9 @@ the exact three installed concretes in the invoking shell:
 context pkg=m-core@v0.1.0 pkg=m-term@v0.1.0 pkg=m-rsudo@v0.1.0
 ```
 
-The GitHub-hosted Ubuntu public `pkg install` test has verified shell
-library projection and a real non-network `rsudo` module-dispatch error path.
+The GitHub-hosted Ubuntu/macOS public `pkg install` test (`m-core` run
+`42037725004`) verified shell-library projection and the real non-network
+`rsudo` module-dispatch error path.
 It does **not** prove remote SSH/sudo behavior, `rsudo-admin` remote-menu
 source injection, or `rssh` interactive shell integration. Those paths
 still have legacy global `m` library/path assumptions and require focused
