@@ -1,0 +1,212 @@
+NAME
+    rsudo - execute a command under sudo on a remote host
+
+SYNOPSIS
+    rsudo [--interactive] [--askpass] [--ssh-auth-check]
+          [--connect user@host] [--load file:group] [--user sudo_as_user]
+          [--no-preserve-quotes] [submodule] [--] [args...]
+
+DESCRIPTION
+    rsudo connects to a remote host through SSH and executes the requested target
+    under remote sudo. It is the command entrypoint for the rsudo library.
+
+    Connection and credential state may be supplied through RSUDO_HOST,
+    RSUDO_USER and RSUDO_PASSWORD, through --connect and --load, or through the
+    documented password-acquisition paths.
+
+    Connection/credential state, sudo target-user state and interactive mode may
+    remain active in the current shell and are inherited by recursive rsudo
+    calls. --user and --interactive update those reusable values.
+
+    Askpass, no-preserve-quotes and ssh-auth-check are invocation-local: every
+    rsudo call clears those modes before parsing its own options.
+
+    A literal -- ends rsudo option and submodule interpretation and sends the
+    remaining operands to normal remote execution.
+
+OPTIONS
+    --ssh-auth-check
+        Perform an interactive SSH preparation followed by a real ssh_auth
+        verification, then return without executing sudo or a remote target.
+
+        The check requires a TTY and accepts no remaining command/submodule
+        operands. The first SSH connection uses StrictHostKeyChecking=ask,
+        AddKeysToAgent=yes and ControlPath=none so host enrollment and ordinary
+        OpenSSH credential interaction can occur. The second connection uses
+        ssh_auth with RSUDO_PASSWORD and ControlPath=none to verify the normal
+        rsudo authentication path.
+
+    --interactive
+        Force interactive remote execution through a terminal-capable path.
+
+    --askpass
+        When standard input is not a TTY, consume the first input record as the
+        rsudo password before forwarding the remaining input to the operation.
+
+    --connect user@host
+        Set the remote login user and host. The user may be empty and then falls
+        back to USER; the host must be non-empty.
+
+    --load file:group
+        Split the operand at its final ':'. file and group are independent and
+        either may be empty.
+
+        file:group
+            Load/evaluate file, then select group credentials.
+
+        file:
+            Load/evaluate file without selecting or replacing credentials from
+            a group.
+
+        :group
+            Select group credentials already present in shell memory without
+            loading a file.
+
+        :
+            Load no file and select no group; preserve current connection state.
+
+        A non-empty group selects:
+            RSUDO_CREDENTIALS_GROUP_<group>_HOST
+            RSUDO_CREDENTIALS_GROUP_<group>_USER
+            RSUDO_CREDENTIALS_GROUP_<group>_PASS
+
+        The ':' separator is mandatory.
+
+    --user sudo_as_user
+        Execute the remote target as sudo_as_user, subject to remote sudo policy.
+
+    --no-preserve-quotes
+        Disable normal rsudo command normalization for this invocation.
+
+    --
+        End rsudo option/submodule processing.
+
+    The current rsudo option surface uses the long option spellings above. The
+    former short aliases -n, -i and -A are not rsudo options.
+
+RECURSIVE CALLS
+    Submodules execute in the current shell and may call rsudo again.
+
+    Recursive rsudo calls reuse current connection/credential state such as
+    RSUDO_HOST, RSUDO_USER and RSUDO_PASSWORD. They also inherit current
+    RSUDO_AS_USER and RSUDO_INTERACTIVE state.
+
+    RSUDO_ASKPASS, RSUDO_NO_PRESERVE_QUOTES and RSUDO_SSH_AUTH_CHECK are
+    cleared at each rsudo call and therefore are not inherited implicitly.
+
+ENVIRONMENT
+    Requires a nonempty m_ROOT inherited from an initialized m environment.
+    From an uninitialized host shell, invoke m rsudo [arguments].
+
+    RSUDO_HOST
+        Remote SSH host.
+
+    RSUDO_USER
+        Remote SSH login user. USER is used when RSUDO_USER is empty and USER is
+        available.
+
+    RSUDO_PASSWORD
+        Non-empty authentication value used by normal rsudo as the ssh_auth
+        candidate secret and made available to remote sudo when needed.
+
+    RSUDO_CREDENTIALS_GROUP_<group>_HOST
+    RSUDO_CREDENTIALS_GROUP_<group>_USER
+    RSUDO_CREDENTIALS_GROUP_<group>_PASS
+        Named credentials selectable through --load.
+
+    USER
+        Fallback login user when RSUDO_USER is empty.
+
+    RSUDO_AS_USER and RSUDO_INTERACTIVE are reusable rsudo caller state and may
+    be inherited by recursive calls. RSUDO_ASKPASS,
+    RSUDO_NO_PRESERVE_QUOTES and RSUDO_SSH_AUTH_CHECK are invocation-local and
+    are cleared before each rsudo invocation parses its options.
+
+EXEC INJECT SUBMODULE
+    rsudo exec inject
+        [library-reference | --command command-name local-source]...
+        [-- command-source [command-arg...]]
+
+    The exec inject operation generates an in-memory library/source program
+    through loadlib_inject_stream and pipes that complete generated source into a
+    recursive rsudo call.
+
+    Selected libraries and repeatable --command registrations are explicit and
+    follow the loadlib_inject_stream contract. Each --command associates a
+    caller-selected shell function identifier with one local source file and
+    executes that source in a subshell whenever invoked.
+
+    An optional one-shot command-source and its arguments follow --. The one-shot
+    source also executes through an isolated generated subshell wrapper.
+
+    When input remains after outer password acquisition, non-TTY standard input
+    is appended by loadlib_inject_stream as shell source after named-command
+    definitions and the optional one-shot command invocation. It is therefore
+    source code, not runtime stdin for an injected command.
+
+    Because injected command bodies execute in subshells, their exit, exec,
+    positional-parameter, trap, cwd, umask, file-descriptor and shell-option
+    effects do not terminate or mutate the containing continuation shell.
+    Registered named commands remain callable by the one-shot command and by
+    subsequent input source.
+
+    The recursive rsudo call inherits current target-user and interactive state.
+    Source generation completes before recursive execution begins. A generator
+    failure is returned without invoking recursive rsudo; after successful
+    generation the recursive rsudo status is propagated.
+
+INPUT AND OUTPUT
+    Non-interactive execution preserves the target's intended standard input.
+    Authentication data is not delivered to the target as ordinary input.
+
+    Target stdout and stderr remain observable to the caller.
+
+    Interactive execution uses a remote terminal path suitable for TTY-requiring
+    commands.
+
+    With --interactive and non-TTY standard input, the remaining input after any
+    --askpass password record is consumed locally as shell source for the remote
+    privileged operation. A non-empty source stream is executed under remote sudo
+    in the same interactive shell environment as the requested command.
+
+    When command operands are present, their invocation follows the injected
+    source. Normal mode preserves their argument meaning; --no-preserve-quotes
+    applies its alternate command-passing behavior to that appended invocation.
+
+    With no command operands, a non-empty source stream is the complete remote
+    shell program. The source stream is not forwarded as ordinary target stdin.
+
+EXIT STATUS
+    When remote execution is reached, rsudo propagates the resulting operation
+    status.
+
+    Local invocation/setup failures use:
+        1   missing --user operand
+        2   missing --connect operand
+        3   --connect contains more than one @
+        4   --connect contains no @
+        5   --connect has an empty host
+        6   missing --load operand
+        7   --load operand contains no :
+        8   unknown long rsudo option
+        9   empty RSUDO_HOST after option/load processing
+        10  no usable RSUDO_USER and no USER fallback
+        11  --askpass password read from stdin failed
+        12  password read from TTY failed
+        13  RSUDO_PASSWORD is empty after acquisition
+        14  invalid delegated submodule function name
+        15  rsudo submodule load failed
+        16  delegated submodule function is unavailable
+        253 --ssh-auth-check received unexpected remaining operands
+        254 --ssh-auth-check requires a TTY
+        255 --ssh-auth-check authentication verification failed
+
+SECURITY
+    RSUDO_PASSWORD is authentication data. It must not become ordinary target
+    input/output or be exposed merely because a remote authentication step does
+    not consume it.
+
+SEE ALSO
+    rsudo.lib.sh
+    ssh.lib.sh
+    rsudo-mod-fs.lib.sh

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+[ -n "${m_ROOT:-}" ] || { printf '%s\n' 'rssh: m environment not initialized' >&2; exit 1; }
+
+. "$m_LIB_DIR/sys/sh/core.lib.sh" || { printf '%s\n' 'rssh: m shell runtime unavailable' >&2; exit 2; }
+
+export m_SHELL_EXT="$m_LIB_DIR/sys/sh/rsudo/rsudo.lib.sh"
+
+export PS1='$(tput setaf 7)$(tput bold)RSSH$(tput sgr0) $(tput setaf 2)\u$(tput setaf 7)@$(tput setaf 2)\h$(tput setaf 7):$(tput setaf 2)\w$(tput setaf 4) \$$(tput sgr0) '
+shell "$@"

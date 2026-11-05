@@ -1,0 +1,11 @@
+#!/bin/sh
+
+[ -n "${m_ROOT:-}" ] || { printf '%s\n' 'rsudo: m environment not initialized' >&2; exit 1; }
+
+. "$m_LIB_DIR/sys/sh/core.lib.sh" || { printf '%s\n' 'rsudo: m shell runtime unavailable' >&2; exit 2; }
+
+loadsyslib "rsudo/rsudo"
+
+log info rsudo command-called
+
+rsudo "$@"
