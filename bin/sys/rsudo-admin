@@ -128,8 +128,8 @@ rsudo_admin_connect()
 # context PATH. Never fall back to a legacy global m library source.
 rsudo_admin_package_library_dir()
 (
-  [ "$#" -eq 1 ] && [ -n "$1" ] || return 2
-  [ -n "${m_PKG_DIR:-}" ] || return 3
+  [ "$#" -eq 1 ] && [ -n "$1" ] || return 1
+  [ -n "${m_PKG_DIR:-}" ] || return 2
 
   rsudo_admin_source_path_remaining=${PATH-}:
   rsudo_admin_source_selected_dir=
@@ -141,19 +141,19 @@ rsudo_admin_package_library_dir()
     case "$rsudo_admin_source_path_entry" in
       "$m_PKG_DIR"/"$1"@*/link/lib/sh)
         [ -d "$rsudo_admin_source_path_entry" ] &&
-        [ ! -L "$rsudo_admin_source_path_entry" ] || return 4
+        [ ! -L "$rsudo_admin_source_path_entry" ] || return 3
 
         if [ -n "$rsudo_admin_source_selected_dir" ] &&
            [ "$rsudo_admin_source_selected_dir" != "$rsudo_admin_source_path_entry" ]
         then
-          return 5
+          return 4
         fi
         rsudo_admin_source_selected_dir=$rsudo_admin_source_path_entry
         ;;
     esac
   done
 
-  [ -n "$rsudo_admin_source_selected_dir" ] || return 6
+  [ -n "$rsudo_admin_source_selected_dir" ] || return 5
   printf '%s\n' "$rsudo_admin_source_selected_dir"
 )
 
