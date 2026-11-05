@@ -28,20 +28,20 @@ jobs:
           sh -n build.sh
           sh build.sh release
           cd release
-          sha256sum m-rsudo-v0.1.0-all.tar.gz > SHA256SUMS
+          sha256sum m-rsudo-v0.1.1-all.tar.gz > SHA256SUMS
           sha256sum -c SHA256SUMS
-          tar -tzf m-rsudo-v0.1.0-all.tar.gz | grep -q '^bin/'
-          tar -tzf m-rsudo-v0.1.0-all.tar.gz | grep -q '^lib/sh/'
-      - name: Publish immutable v0.1.0 only if absent
+          tar -tzf m-rsudo-v0.1.1-all.tar.gz | grep -q '^bin/'
+          tar -tzf m-rsudo-v0.1.1-all.tar.gz | grep -q '^lib/sh/'
+      - name: Publish immutable v0.1.1 only if absent
         env:
           GH_TOKEN: ${{ github.token }}
         shell: sh
         run: |
           set -eu
-          if gh release view v0.1.0 >/dev/null 2>&1; then
-            echo 'v0.1.0 exists, refusing to replace the immutable release'
+          if gh release view v0.1.1 >/dev/null 2>&1; then
+            echo 'v0.1.1 exists, refusing to replace the immutable release'
             exit 0
           fi
-          gh release create v0.1.0 release/m-rsudo-v0.1.0-all.tar.gz release/SHA256SUMS \
-            --target "$GITHUB_SHA" --title 'm-rsudo v0.1.0' \
+          gh release create v0.1.1 release/m-rsudo-v0.1.1-all.tar.gz release/SHA256SUMS \
+            --target "$GITHUB_SHA" --title 'm-rsudo v0.1.1' \
             --notes 'First-party m-rsudo sources for the existing m package manager.'
