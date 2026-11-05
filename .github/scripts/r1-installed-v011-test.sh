@@ -21,4 +21,15 @@ done
 . loadlib-inject-stream.lib.sh
 . rsudo.lib.sh
 command -v menu_command_main >/dev/null || exit 8
-printf '%s\n' 'PASS: real installed v0.1.1 public package views and libraries'
+# Run the shipped native menu/admin error paths before any terminal session.
+menu_status=0
+menu -Z >/dev/null 2>&1 || menu_status=$?
+[ "$menu_status" -eq 2 ] || exit 9
+admin_status=0
+rsudo-admin --invalid >/dev/null 2>&1 || admin_status=$?
+[ "$admin_status" -eq 1 ] || exit 10
+
+# The real rssh command must pass the selected package extension to m shell.
+rssh_shell_extension=$(SHELL=/bin/sh rssh -c 'printf "%s" "$m_SHELL_EXT"')
+[ "$rssh_shell_extension" = "$rsudo_lib/rsudo.lib.sh" ] || exit 11
+printf '%s\n' 'PASS: public v0.1.1 installation, native commands and selected rssh shell extension'
