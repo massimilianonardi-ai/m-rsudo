@@ -1,5 +1,26 @@
 # m-rsudo
 
-Source repository for the existing technical `rsudo` subsystem: `rsudo`, `rsudo-admin`, `rssh`, the `rsudo/` library modules and their operational manuals, including existing administration backends. Sources preserve their original relative runtime paths at extraction.
+Independent source package for the actual `rsudo`, `rsudo-admin`, `rssh`
+commands and all eight original `rsudo` shell modules, with operational
+manuals and the existing remote testlab scenario. No credentials or host
+secrets are stored in this repository.
 
-Its actual external dependencies include terminal menu and the shared `m` shell/SSH/credential libraries. Nothing here stores host credentials. Packaging through the current `pkg` contracts and real SSH/sudo validation remain to be completed; a source import alone is not a runnable installation.
+The immutable `v0.1.0` GitHub release is produced by
+`sh build.sh release` and described in `pkg-catalog/pkg-schema-v2` as
+a real `m-rsudo` package with installed shell-library and command views.
+
+`rsudo` uses the separately installed `m-core` shell libraries. For
+`rsudo-admin`, `m-term` also supplies the actual terminal menu. Select
+the exact three installed concretes in the invoking shell:
+
+```sh
+context pkg=m-core@v0.1.0 pkg=m-term@v0.1.0 pkg=m-rsudo@v0.1.0
+```
+
+The GitHub-hosted Ubuntu public `pkg install` test has verified shell
+library projection and a real non-network `rsudo` module-dispatch error path.
+It does **not** prove remote SSH/sudo behavior, `rsudo-admin` remote-menu
+source injection, or `rssh` interactive shell integration. Those paths
+still have legacy global `m` library/path assumptions and require focused
+realignment and testing before operational use. A real privileged end-to-end
+test must use an explicitly authorized SSH/sudo test target.
