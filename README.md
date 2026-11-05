@@ -32,5 +32,6 @@ Current main source realigns `rsudo-admin` Browse host with the selected
 package-owned `m-core` and `m-term` shell libraries and the shared
 `menu-command.lib.sh` source, using the existing `rsudo exec inject`
 transport. This source requires coordinated newer m-core/m-term packages and
-is not part of the immutable `m-rsudo/v0.1.0` release. Actual SSH/sudo and
+is published in the separate immutable `m-rsudo/v0.1.1` release; the
+`v0.1.0` artifact remains unchanged. The v2 catalog lists both versions. Actual SSH/sudo and
 interactive remote browsing still need an authorized real target.
