@@ -32,4 +32,17 @@ rsudo-admin --invalid >/dev/null 2>&1 || admin_status=$?
 # The real rssh command must pass the selected package extension to m shell.
 rssh_shell_extension=$(SHELL=/bin/sh rssh -c 'printf "%s" "$m_SHELL_EXT"')
 [ "$rssh_shell_extension" = "$rsudo_lib/rsudo.lib.sh" ] || exit 11
+# Execute only in-memory bytes from the selected, installed release views.
+loadlib_inject_stream base \
+  --library array "$core_lib/array.lib.sh" \
+  --library map "$core_lib/map.lib.sh" \
+  --library term "$term_lib/term.lib.sh" \
+  --library menu "$term_lib/menu.lib.sh" \
+  --library menu-command "$term_lib/menu-command.lib.sh" <<'EOF_REMOTE' | env -i PATH=/usr/bin:/bin sh
+[ -z "${m_ROOT-}" ] || exit 20
+command -v menu_command_main >/dev/null || exit 21
+(menu_command_main -Z) >/dev/null 2>&1
+[ "$?" -eq 2 ] || exit 22
+EOF_REMOTE
+
 printf '%s\n' 'PASS: public v0.1.1 installation, native commands and selected rssh shell extension'
