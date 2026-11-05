@@ -5,11 +5,13 @@ SYNOPSIS
     rssh [<shell-argument> ...]
 
 DESCRIPTION
-    rssh starts the managed shell environment with rsudo.lib.sh selected as the
-    shell extension.
+    rssh starts the managed shell environment with the selected package-owned
+    rsudo.lib.sh as the shell extension. The m-rsudo package must already be
+    installed and selected through the current shell context.
 
-    Before delegating to shell, rssh exports m_SHELL_EXT as the current
-    rsudo.lib.sh path and installs an RSSH prompt in PS1. The prompt uses tput
+    Before delegating to shell, rssh locates rsudo.lib.sh in the selected
+    m-rsudo concrete's link/lib/sh view on PATH, exports that absolute path
+    as m_SHELL_EXT, and installs an RSSH prompt in PS1. The prompt uses tput
     capabilities for terminal styling and shows the current user, host and
     working directory.
 
@@ -20,7 +22,16 @@ ENVIRONMENT
     From an uninitialized host shell, invoke m rssh [arguments].
 
     m_SHELL_EXT
-        Exported as $m_LIB_DIR/sys/sh/rsudo/rsudo.lib.sh before shell startup.
+        Exported as the selected m-rsudo@<version>/link/lib/sh/rsudo.lib.sh
+        pathname before shell startup.
+
+    m_PKG_DIR
+        Required package store root used to constrain extension lookup to
+        installed m-rsudo package views.
+
+    PATH
+        Must include exactly one selected m-rsudo link/lib/sh view (repeating
+        the same view is harmless). Other package versions are ambiguous.
 
     PS1
         Replaced with the RSSH prompt used by the managed shell session.
@@ -30,12 +41,18 @@ ENVIRONMENT
 
 EXIT STATUS
     rssh delegates shell preparation, execution and resulting status to shell.
-    A non-zero status indicates failure to prepare or start the managed shell.
+    Local pre-shell failures are:
+        1   m environment missing
+        2   m shell runtime unavailable
+        3   package store root missing
+        4   selected rsudo shell extension unavailable
+        5   multiple different rsudo shell extensions selected
+    Otherwise the launched shell status is propagated.
 
 DEPENDENCIES
     rssh is an m-integrated command. It uses the m runtime roots and delegates
-    to the shell facility. The selected shell session loads rsudo.lib.sh through
-    m_SHELL_EXT.
+    to the shell facility. The selected shell session loads the package-owned
+    rsudo.lib.sh through m_SHELL_EXT without requiring a legacy global copy.
 
 SEE ALSO
     shell

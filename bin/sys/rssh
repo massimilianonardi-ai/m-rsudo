@@ -4,7 +4,34 @@
 
 . "$m_LIB_DIR/sys/sh/core.lib.sh" || { printf '%s\n' 'rssh: m shell runtime unavailable' >&2; exit 2; }
 
-export m_SHELL_EXT="$m_LIB_DIR/sys/sh/rsudo/rsudo.lib.sh"
+[ -n "${m_PKG_DIR:-}" ] || { printf '%s\n' 'rssh: package store root unavailable' >&2; exit 3; }
+
+# The current context publishes package-owned shell libraries on PATH.
+# Resolve only the selected m-rsudo package view, not a legacy global copy.
+rssh_extension=
+rssh_path_remaining=${PATH-}:
+while [ -n "$rssh_path_remaining" ]
+do
+  rssh_path_entry=${rssh_path_remaining%%:*}
+  rssh_path_remaining=${rssh_path_remaining#*:}
+
+  case "$rssh_path_entry" in
+    "$m_PKG_DIR"/m-rsudo@*/link/lib/sh)
+      rssh_candidate="$rssh_path_entry/rsudo.lib.sh"
+      [ -f "$rssh_candidate" ] && [ -r "$rssh_candidate" ] || continue
+      if [ -n "$rssh_extension" ] && [ "$rssh_extension" != "$rssh_candidate" ]
+      then
+        printf '%s\n' 'rssh: multiple selected rsudo shell extensions' >&2
+        exit 5
+      fi
+      rssh_extension=$rssh_candidate
+      ;;
+  esac
+done
+
+[ -n "$rssh_extension" ] || { printf '%s\n' 'rssh: selected rsudo shell extension unavailable' >&2; exit 4; }
+export m_SHELL_EXT="$rssh_extension"
+unset rssh_extension rssh_candidate rssh_path_entry rssh_path_remaining
 
 export PS1='$(tput setaf 7)$(tput bold)RSSH$(tput sgr0) $(tput setaf 2)\u$(tput setaf 7)@$(tput setaf 2)\h$(tput setaf 7):$(tput setaf 2)\w$(tput setaf 4) \$$(tput sgr0) '
 shell "$@"
