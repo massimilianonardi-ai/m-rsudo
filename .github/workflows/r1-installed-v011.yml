@@ -1,0 +1,49 @@
+name: R1 real v0.1.1 package installation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/r1-installed-v011-test.sh'
+      - '.github/workflows/r1-installed-v011.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: rsudo
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: massimilianonardi-ai/m-os
+          ref: 1e3a038a5abf6f8c176272d8e44464c842d3cefd
+          path: m-source
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: massimilianonardi-ai/pkg-catalog
+          ref: a75f9be1c9a62a72899022eddf55e163d86ab630
+          path: catalog
+          persist-credentials: false
+      - name: Install three real published GitHub releases through public m pkg
+        shell: sh
+        run: |
+          set -eu
+          cd m-source
+          ./m osarch update
+          conf=$(./m state-path system sys pkg conf)
+          mkdir -p -- "$conf"
+          printf '%s\n' "$GITHUB_WORKSPACE/catalog" > "$conf/catalog"
+          ./m pkg install m-core@v0.1.1 m-term@v0.1.1 m-rsudo@v0.1.1
+          ./m sh ../rsudo/.github/scripts/r1-installed-v011-test.sh
