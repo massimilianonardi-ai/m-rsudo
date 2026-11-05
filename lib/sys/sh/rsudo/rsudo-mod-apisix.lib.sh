@@ -2,7 +2,7 @@
 # The legacy source is preserved under a separate dispatcher identity.
 # Replace individual entrypoints here only when their new semantics and tests are ready.
 
-loadsyslib "rsudo/rsudo-mod-apisixlegacy" || return 1
+. rsudo-mod-apisixlegacy.lib.sh || return 1 || return 1
 
 rsudo_mod_apisix_set_auth_vars()
 {

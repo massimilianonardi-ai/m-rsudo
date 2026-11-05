@@ -8,9 +8,9 @@
 
 #------------------------------------------------------------------------------
 
-loadsyslib "rand"
-loadsyslib "enc"
-loadsyslib "ssh"
+. rand.lib.sh || return 1
+. enc.lib.sh || return 1
+. ssh.lib.sh || return 1
 
 #------------------------------------------------------------------------------
 
@@ -209,6 +209,35 @@ EOF
 #------------------------------------------------------------------------------
 
 # replaces "rsudo command" with "rsudo function" to allow safe use of env (without exporting) in recursive calls
+# Resolve only rsudo modules projected by an installed m-rsudo concrete.
+# The effective context determines which concrete provides the module.
+_rsudo_module_lookup()
+{
+  [ "$#" -eq 1 ] || return 2
+  _rsudo_search_path=$PATH
+  while :
+  do
+    case "$_rsudo_search_path" in
+      *:*)
+        _rsudo_dir=${_rsudo_search_path%%:*}
+        _rsudo_search_path=${_rsudo_search_path#*:}
+        ;;
+      *)
+        _rsudo_dir=$_rsudo_search_path
+        _rsudo_search_path=
+        ;;
+    esac
+    case "$_rsudo_dir" in
+      "$m_PKG_DIR"/m-rsudo@*/link/lib/sh)
+        _rsudo_module_file="$_rsudo_dir/rsudo-mod-$1.lib.sh"
+        [ -f "$_rsudo_module_file" ] && [ -r "$_rsudo_module_file" ] && return 0
+        ;;
+    esac
+    [ -n "$_rsudo_search_path" ] || break
+  done
+  return 1
+}
+
 rsudo()
 {
   RSUDO_NO_PRESERVE_QUOTES=""
@@ -354,13 +383,13 @@ rsudo()
   then
     shift
     rsudo_core "$@"
-  elif [ "$#" -ge "2" ] && valid_cli_name "$1" && [ -f "$m_LIB_DIR/sys/sh/rsudo/rsudo-mod-${1}.lib.sh" ] && [ -r "$m_LIB_DIR/sys/sh/rsudo/rsudo-mod-${1}.lib.sh" ]
+  elif [ "$#" -ge "2" ] && valid_cli_name "$1" && _rsudo_module_lookup "$1"
   then
     log debug rsudo module-load module "$1" args "$*"
 
     valid_cli_name "$2" || { log fatal execution execution-failed operation rsudo-module-load function "$2"; return 14; }
 
-    loadsyslib "rsudo/rsudo-mod-${1}" || { log fatal execution execution-failed operation rsudo-module-load module "$1"; return 15; }
+    . "$_rsudo_module_file" || { log fatal execution execution-failed operation rsudo-module-load module "$1"; return 15; }
 
     eval 'shift 2; set -- "rsudo_mod_'"$(printf '%s\n' "${1}_${2}" | sed 's/-/_/g')"'" "$@"'
     exist_function "$1" || { log fatal rsudo module-delegate-missing function "$1"; return 16; }

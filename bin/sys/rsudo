@@ -4,7 +4,7 @@
 
 . "$m_LIB_DIR/sys/sh/core.lib.sh" || { printf '%s\n' 'rsudo: m shell runtime unavailable' >&2; exit 2; }
 
-loadsyslib "rsudo/rsudo"
+. rsudo.lib.sh || exit 3
 
 log info rsudo command-called
 
