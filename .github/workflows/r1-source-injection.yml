@@ -1,0 +1,52 @@
+name: R1 real-source injection composition
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'bin/sys/rsudo-admin'
+      - '.github/scripts/r1-source-injection-test.sh'
+      - '.github/workflows/r1-source-injection.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-composition:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: rsudo
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: massimilianonardi-ai/m-os
+          ref: 1e3a038a5abf6f8c176272d8e44464c842d3cefd
+          path: m-source
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: massimilianonardi-ai/m-core
+          ref: 9c8e36e45e3b405f763c770c7b6d4cfeac93dab1
+          path: core
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: massimilianonardi-ai/m-term
+          ref: f11487bd613d64a1e2c51f5a4dadd48dee50bcc4
+          path: term
+          persist-credentials: false
+      - name: Execute real m bootstrap and new source components
+        shell: sh
+        run: |
+          set -eu
+          cd m-source
+          ./m osarch update
+          ./m sh ../rsudo/.github/scripts/r1-source-injection-test.sh
