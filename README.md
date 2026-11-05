@@ -25,3 +25,10 @@ source injection, or `rssh` interactive shell integration. Those paths
 still have legacy global `m` library/path assumptions and require focused
 realignment and testing before operational use. A real privileged end-to-end
 test must use an explicitly authorized SSH/sudo test target.
+
+Current main source realigns `rsudo-admin` Browse host with the selected
+package-owned `m-core` and `m-term` shell libraries and the shared
+`menu-command.lib.sh` source, using the existing `rsudo exec inject`
+transport. This source requires coordinated newer m-core/m-term packages and
+is not part of the immutable `m-rsudo/v0.1.0` release. Actual SSH/sudo and
+interactive remote browsing still need an authorized real target.

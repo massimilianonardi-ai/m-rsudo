@@ -49,16 +49,18 @@ BROWSE HOST
 
     The injected dependency set is explicitly:
 
-        base
-        array
-        map
-        term
-        menu
+        base                m-owned source, embedded locally
+        array, map          from the selected m-core package link/lib/sh
+        term, menu          from the selected m-term package link/lib/sh
+        menu-command        same m-term package, shared CLI source
 
-    The current local bin/sys/menu source is injected as a named command and
-    invoked remotely with:
+    Only the exact installed package source files selected through the local
+    context PATH are embedded. Missing/ambiguous package views or unreadable
+    required sources are reported locally before any SSH/sudo operation.
 
-        -d /
+    The generated program calls the actual menu_command_main with -d /.
+    This uses the same filesystem browser implementation as the native menu
+    command without requiring m or a package installation on the remote host.
 
     The serialized menu result is discarded on the remote side. Terminal UI
     traffic written to the remote /dev/tty remains visible through the SSH PTY
@@ -134,7 +136,9 @@ SECURITY
     Host discovery does not export credential state. It inspects current shell
     state and exposes only matching group identities and HOST labels to menu.
 
-    Browse host does not eval the remote menu result locally.
+    Browse host does not eval the remote menu result locally. Local sources are
+    selected only from the current installed m-core and m-term views; generated
+    remote source has no fallback to the legacy global library tree.
 
     rsudo jobs intentionally sources user-selected local shell code. Use only
     trusted job libraries and templates.

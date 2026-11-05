@@ -124,6 +124,39 @@ rsudo_admin_connect()
   return 0
 }
 
+# Resolve a single selected installed package library view from the current
+# context PATH. Never fall back to a legacy global m library source.
+rsudo_admin_package_library_dir()
+(
+  [ "$#" -eq 1 ] && [ -n "$1" ] || return 2
+  [ -n "${m_PKG_DIR:-}" ] || return 3
+
+  rsudo_admin_source_path_remaining=${PATH-}:
+  rsudo_admin_source_selected_dir=
+  while [ -n "$rsudo_admin_source_path_remaining" ]
+  do
+    rsudo_admin_source_path_entry=${rsudo_admin_source_path_remaining%%:*}
+    rsudo_admin_source_path_remaining=${rsudo_admin_source_path_remaining#*:}
+
+    case "$rsudo_admin_source_path_entry" in
+      "$m_PKG_DIR"/"$1"@*/link/lib/sh)
+        [ -d "$rsudo_admin_source_path_entry" ] &&
+        [ ! -L "$rsudo_admin_source_path_entry" ] || return 4
+
+        if [ -n "$rsudo_admin_source_selected_dir" ] &&
+           [ "$rsudo_admin_source_selected_dir" != "$rsudo_admin_source_path_entry" ]
+        then
+          return 5
+        fi
+        rsudo_admin_source_selected_dir=$rsudo_admin_source_path_entry
+        ;;
+    esac
+  done
+
+  [ -n "$rsudo_admin_source_selected_dir" ] || return 6
+  printf '%s\n' "$rsudo_admin_source_selected_dir"
+)
+
 rsudo_admin_browse_host()
 {
   rsudo_admin_select_host 'Browse host'
@@ -140,12 +173,46 @@ rsudo_admin_browse_host()
     *) return "$rsudo_admin_status" ;;
   esac
 
+  rsudo_admin_core_library_dir=$(rsudo_admin_package_library_dir m-core)
+  rsudo_admin_core_source_status=$?
+  if [ "$rsudo_admin_core_source_status" -ne 0 ]
+  then
+    rsudo_admin_message="Remote browser unavailable: m-core library view missing or ambiguous (status $rsudo_admin_core_source_status)."
+    return 0
+  fi
+
+  rsudo_admin_term_library_dir=$(rsudo_admin_package_library_dir m-term)
+  rsudo_admin_term_source_status=$?
+  if [ "$rsudo_admin_term_source_status" -ne 0 ]
+  then
+    rsudo_admin_message="Remote browser unavailable: m-term library view missing or ambiguous (status $rsudo_admin_term_source_status)."
+    return 0
+  fi
+
+  for rsudo_admin_remote_source in \
+    "$rsudo_admin_core_library_dir/array.lib.sh" \
+    "$rsudo_admin_core_library_dir/map.lib.sh" \
+    "$rsudo_admin_term_library_dir/term.lib.sh" \
+    "$rsudo_admin_term_library_dir/menu.lib.sh" \
+    "$rsudo_admin_term_library_dir/menu-command.lib.sh"
+  do
+    if [ ! -f "$rsudo_admin_remote_source" ] || [ ! -r "$rsudo_admin_remote_source" ]
+    then
+      rsudo_admin_message="Remote browser unavailable: selected package source ${rsudo_admin_remote_source##*/} is missing or unreadable."
+      return 0
+    fi
+  done
+
   (
     rsudo --load ":$rsudo_admin_selected_group" --interactive \
       exec inject \
-      base array map term menu \
-      --command _rsudo_admin_remote_menu "$m_BIN_SYS_DIR/menu" <<'EOF_RSUDO_ADMIN_REMOTE_MENU'
-_rsudo_admin_remote_menu -d / >/dev/null
+      base \
+      --library array "$rsudo_admin_core_library_dir/array.lib.sh" \
+      --library map "$rsudo_admin_core_library_dir/map.lib.sh" \
+      --library term "$rsudo_admin_term_library_dir/term.lib.sh" \
+      --library menu "$rsudo_admin_term_library_dir/menu.lib.sh" \
+      --library menu-command "$rsudo_admin_term_library_dir/menu-command.lib.sh" <<'EOF_RSUDO_ADMIN_REMOTE_MENU'
+menu_command_main -d / >/dev/null
 EOF_RSUDO_ADMIN_REMOTE_MENU
   )
   rsudo_admin_status=$?
