@@ -21,10 +21,12 @@ The GitHub-hosted Ubuntu/macOS public `pkg install` test (`m-core` run
 `42037725004`) verified shell-library projection and the real non-network
 `rsudo` module-dispatch error path.
 It does **not** prove remote SSH/sudo behavior, `rsudo-admin` remote-menu
-source injection, or `rssh` interactive shell integration. Those paths
-still have legacy global `m` library/path assumptions and require focused
-realignment and testing before operational use. A real privileged end-to-end
-test must use an explicitly authorized SSH/sudo test target.
+source injection, or `rssh` interactive shell integration. The immutable
+`v0.1.0` artifacts still have legacy global-library path assumptions.
+The current source branch has corrected those assumptions, but requires new
+coordinated package releases and authentic installed-package validation before
+it can be called operational. A real privileged end-to-end test must use an
+explicitly authorized SSH/sudo test target.
 
 Current main source realigns `rsudo-admin` Browse host with the selected
 package-owned `m-core` and `m-term` shell libraries and the shared
