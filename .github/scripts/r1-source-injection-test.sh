@@ -41,6 +41,12 @@ status=$?
 set -e
 [ "$status" -eq 2 ] || { cat "$work/native-out"; exit 5; }
 
+# The actual rsudo-admin entrypoint must reject an absent selected package
+# source predictably, before any interactive menu or privileged operation.
+status=0
+env PATH=/usr/bin:/bin "$GITHUB_WORKSPACE/rsudo/bin/sys/rsudo-admin" > "$work/admin-out" 2>&1 || status=$?
+[ "$status" -eq 3 ] || { cat "$work/admin-out"; exit 9; }
+
 # This is an in-memory program assembled from exact current source files.
 loadlib_inject_stream \
   base \

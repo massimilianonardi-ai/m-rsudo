@@ -4,7 +4,59 @@
 
 . "$m_LIB_DIR/sys/sh/core.lib.sh" || { printf '%s\n' 'rsudo-admin: m shell runtime unavailable' >&2; exit 2; }
 
-. rsudo.lib.sh || exit 3
+# Resolve a single selected installed package library view from the current
+# context PATH. Never fall back to a legacy global m library source.
+rsudo_admin_package_library_dir()
+(
+  [ "$#" -eq 1 ] && [ -n "$1" ] || return 1
+  [ -n "${m_PKG_DIR:-}" ] || return 2
+
+  rsudo_admin_source_path_remaining=${PATH-}:
+  rsudo_admin_source_selected_dir=
+  while [ -n "$rsudo_admin_source_path_remaining" ]
+  do
+    rsudo_admin_source_path_entry=${rsudo_admin_source_path_remaining%%:*}
+    rsudo_admin_source_path_remaining=${rsudo_admin_source_path_remaining#*:}
+
+    case "$rsudo_admin_source_path_entry" in
+      "$m_PKG_DIR"/"$1"@*/link/lib/sh)
+        [ -d "$rsudo_admin_source_path_entry" ] &&
+        [ ! -L "$rsudo_admin_source_path_entry" ] || return 3
+
+        if [ -n "$rsudo_admin_source_selected_dir" ] &&
+           [ "$rsudo_admin_source_selected_dir" != "$rsudo_admin_source_path_entry" ]
+        then
+          return 4
+        fi
+        rsudo_admin_source_selected_dir=$rsudo_admin_source_path_entry
+        ;;
+    esac
+  done
+
+  [ -n "$rsudo_admin_source_selected_dir" ] || return 5
+  printf '%s\n' "$rsudo_admin_source_selected_dir"
+)
+
+# Resolve the own package library before POSIX dot-sourcing: a missing source
+# may terminate a noninteractive sh as a special-builtin error before a
+# subsequent || exit expression can assign its intended status.
+rsudo_admin_runtime_library_dir=$(rsudo_admin_package_library_dir m-rsudo)
+rsudo_admin_runtime_library_status=$?
+if [ "$rsudo_admin_runtime_library_status" -ne 0 ]
+then
+  printf 'rsudo-admin: selected m-rsudo library view unavailable (status %s)\n' "$rsudo_admin_runtime_library_status" >&2
+  exit 3
+fi
+
+rsudo_admin_runtime_library="$rsudo_admin_runtime_library_dir/rsudo.lib.sh"
+if [ ! -f "$rsudo_admin_runtime_library" ] || [ ! -r "$rsudo_admin_runtime_library" ]
+then
+  printf '%s\n' 'rsudo-admin: selected rsudo.lib.sh unavailable or unreadable' >&2
+  exit 4
+fi
+
+. "$rsudo_admin_runtime_library" || { printf '%s\n' 'rsudo-admin: cannot load selected rsudo library' >&2; exit 5; }
+unset rsudo_admin_runtime_library_dir rsudo_admin_runtime_library_status rsudo_admin_runtime_library
 
 rsudo_admin_display_safe()
 {
@@ -123,39 +175,6 @@ rsudo_admin_connect()
 
   return 0
 }
-
-# Resolve a single selected installed package library view from the current
-# context PATH. Never fall back to a legacy global m library source.
-rsudo_admin_package_library_dir()
-(
-  [ "$#" -eq 1 ] && [ -n "$1" ] || return 1
-  [ -n "${m_PKG_DIR:-}" ] || return 2
-
-  rsudo_admin_source_path_remaining=${PATH-}:
-  rsudo_admin_source_selected_dir=
-  while [ -n "$rsudo_admin_source_path_remaining" ]
-  do
-    rsudo_admin_source_path_entry=${rsudo_admin_source_path_remaining%%:*}
-    rsudo_admin_source_path_remaining=${rsudo_admin_source_path_remaining#*:}
-
-    case "$rsudo_admin_source_path_entry" in
-      "$m_PKG_DIR"/"$1"@*/link/lib/sh)
-        [ -d "$rsudo_admin_source_path_entry" ] &&
-        [ ! -L "$rsudo_admin_source_path_entry" ] || return 3
-
-        if [ -n "$rsudo_admin_source_selected_dir" ] &&
-           [ "$rsudo_admin_source_selected_dir" != "$rsudo_admin_source_path_entry" ]
-        then
-          return 4
-        fi
-        rsudo_admin_source_selected_dir=$rsudo_admin_source_path_entry
-        ;;
-    esac
-  done
-
-  [ -n "$rsudo_admin_source_selected_dir" ] || return 5
-  printf '%s\n' "$rsudo_admin_source_selected_dir"
-)
 
 rsudo_admin_browse_host()
 {

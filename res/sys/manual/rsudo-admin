@@ -154,11 +154,18 @@ ENVIRONMENT
     Requires a nonempty m_ROOT inherited from an initialized m environment.
     From an uninitialized host shell, invoke m rsudo-admin [arguments].
 
+    m_PKG_DIR and PATH must resolve one selected m-rsudo concrete's
+    link/lib/sh view, containing a readable rsudo.lib.sh. Initialization
+    fails locally without falling back to the legacy global library tree.
+
 
 EXIT STATUS
     0   main menu exited normally
     1   invalid command invocation
     2   unrecoverable local menu/runtime setup failure
+    3   selected m-rsudo package library view unavailable or ambiguous
+    4   selected rsudo.lib.sh missing or unreadable
+    5   selected rsudo.lib.sh could not be loaded
 
     Failures of an individual connection, remote browser, job, encrypted load,
     encrypted edit or encrypted creation are reported in the console and return
