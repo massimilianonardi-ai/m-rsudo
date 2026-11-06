@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/scripts/r1-installed-v011-test.sh'
+      - '.github/scripts/r1-pty-admin-test.py'
       - '.github/workflows/r1-installed-v011.yml'
   workflow_dispatch:
 
