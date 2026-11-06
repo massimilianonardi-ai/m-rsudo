@@ -2,13 +2,13 @@
 set -eu
 [ -n "${m_ROOT:-}" ] && [ -n "${m_PKG_DIR:-}" ] || exit 1
 . "$m_LIB_DIR/sys/sh/core.lib.sh" || exit 2
-context pkg=m-core@v0.1.1 pkg=m-term@v0.1.1 pkg=m-rsudo@v0.1.1 || exit 3
+context pkg=m-core@v0.1.1 pkg=m-term@v0.1.1 pkg=m-rsudo@v0.1.2 || exit 3
 core_lib="$m_PKG_DIR/m-core@v0.1.1/link/lib/sh"
 term_lib="$m_PKG_DIR/m-term@v0.1.1/link/lib/sh"
-rsudo_lib="$m_PKG_DIR/m-rsudo@v0.1.1/link/lib/sh"
+rsudo_lib="$m_PKG_DIR/m-rsudo@v0.1.2/link/lib/sh"
 [ "$(command -v menu)" = "$m_PKG_DIR/m-term@v0.1.1/link/bin/menu" ] || exit 4
-[ "$(command -v rssh)" = "$m_PKG_DIR/m-rsudo@v0.1.1/link/bin/rssh" ] || exit 5
-[ "$(command -v rsudo-admin)" = "$m_PKG_DIR/m-rsudo@v0.1.1/link/bin/rsudo-admin" ] || exit 6
+[ "$(command -v rssh)" = "$m_PKG_DIR/m-rsudo@v0.1.2/link/bin/rssh" ] || exit 5
+[ "$(command -v rsudo-admin)" = "$m_PKG_DIR/m-rsudo@v0.1.2/link/bin/rsudo-admin" ] || exit 6
 for path in "$core_lib/array.lib.sh" "$core_lib/map.lib.sh" "$core_lib/loadlib-inject-stream.lib.sh" "$term_lib/term.lib.sh" "$term_lib/menu.lib.sh" "$term_lib/menu-command.lib.sh" "$rsudo_lib/rsudo.lib.sh"
 do
   [ -L "$path" ] && [ -r "$path" ] || exit 7
@@ -33,8 +33,8 @@ rsudo-admin --invalid >/dev/null 2>&1 || admin_status=$?
 rssh_shell_extension=$(SHELL=/bin/sh rssh -c 'printf "%s" "$m_SHELL_EXT"')
 [ "$rssh_shell_extension" = "$rsudo_lib/rsudo.lib.sh" ] || exit 11
 # Check actual published command failures, without replacing any package.
-rssh_bin="$m_PKG_DIR/m-rsudo@v0.1.1/link/bin/rssh"
-admin_bin="$m_PKG_DIR/m-rsudo@v0.1.1/link/bin/rsudo-admin"
+rssh_bin="$m_PKG_DIR/m-rsudo@v0.1.2/link/bin/rssh"
+admin_bin="$m_PKG_DIR/m-rsudo@v0.1.2/link/bin/rsudo-admin"
 work_dir=$(mktemp -d) || exit 12
 trap 'rm -f "$work_dir/"*; rmdir "$work_dir"' 0
 
@@ -85,7 +85,7 @@ sh -n "$work_dir/injected.sh" || exit 24
 injected_result=$(env -i PATH=/usr/bin:/bin sh "$work_dir/injected.sh") || exit 25
 [ "$injected_result" = 'injected menu PASS' ] || exit 26
 
-printf '%s\n' 'PASS: real v0.1.1 installed views, native commands, rssh negative paths and injected source'
+printf '%s\n' 'PASS: installed m-core/m-term v0.1.1 and m-rsudo v0.1.2: native, rssh and menu stream'
 # The only terminal interaction is with the actual installed menu and
 # rsudo-admin, over a disposable PTY; no credential group or remote host.
 python3 "${0%/*}/r1-pty-admin-test.py"
