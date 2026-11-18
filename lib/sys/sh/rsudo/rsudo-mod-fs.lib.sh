@@ -20,10 +20,9 @@ rsudo_mod_fs_delete()
 
 rsudo_mod_fs_get()
 (
-  # Transfer errors from either side of the tar stream must fail the operation.
+  # Check both tar stream endpoints without relying on a nonportable shell option.
   # Disable pathname expansion in this function so an accidental unquoted token
   # cannot turn external pathname data into a filesystem glob.
-  set -o pipefail
   set -f
 
   [ "$#" -eq 2 ] || exit 1
@@ -50,16 +49,15 @@ rsudo_mod_fs_get()
   esac
 
   # Estimate the allocated size of the remote source before transferring it.
-  # pipefail makes a remote du failure visible even though awk is the final
-  # parser in the pipeline.
+  # Check du's status before parsing; awk success must not hide its failure.
   REMOTE_SIZE_KB="$(
     rsudo -- sh -c '
-      set -o pipefail
 
       path="$1"
       [ -e "$path" ] || [ -L "$path" ] || exit 1
 
-      du -sk "$path" | awk "NR == 1 { print \$1; exit }"
+      du_output="$(du -sk "$path")" || exit 1
+      printf '%s\n' "$du_output" | awk "NR == 1 { print \$1; exit }"
     ' sh "$REMOTE_PATH"
   )" || {
     log error rsudo-fs remote-preflight-failed operation get path "$REMOTE_PATH"
@@ -78,12 +76,14 @@ rsudo_mod_fs_get()
     esac
   done
 
-  LOCAL_FREE_KB="$(df -Pk "$LOCAL_PROBE" | awk 'NR == 2 { print $4; exit }')" || exit 1
+  LOCAL_DF_OUTPUT="$(df -Pk "$LOCAL_PROBE")" || exit 1
+  LOCAL_FREE_KB="$(printf '%s\n' "$LOCAL_DF_OUTPUT" | awk 'NR == 2 { print $4; exit }')" || exit 1
 
   if [ -e "$LOCAL_PATH" ] || [ -L "$LOCAL_PATH" ]
   then
     LOCAL_EXISTS=1
-    LOCAL_OLD_SIZE_KB="$(du -sk "$LOCAL_PATH" | awk 'NR == 1 { print $1; exit }')" || exit 1
+    LOCAL_DU_OUTPUT="$(du -sk "$LOCAL_PATH")" || exit 1
+    LOCAL_OLD_SIZE_KB="$(printf '%s\n' "$LOCAL_DU_OUTPUT" | awk 'NR == 1 { print $1; exit }')" || exit 1
   else
     LOCAL_EXISTS=0
     LOCAL_OLD_SIZE_KB=0
@@ -157,7 +157,13 @@ rsudo_mod_fs_get()
   # directories are likewise represented by the same single archive operation.
   # TAR_OPTIONS is unset so caller environment cannot silently enable
   # dereferencing or otherwise change this transfer contract.
-  if ! rsudo -- sh -c '
+  # Private sidecar tracks remote producer status outside the tar byte stream.
+  GET_STATUS_FILE="${LOCAL_STAGE}.producer-status"
+  [ ! -e "$GET_STATUS_FILE" ] && [ ! -L "$GET_STATUS_FILE" ] || exit 1
+  (umask 077; set -C; : > "$GET_STATUS_FILE") || exit 1
+
+  (
+    rsudo -- sh -c '
     path="$1"
     parent="$2"
     name="$3"
@@ -167,12 +173,18 @@ rsudo_mod_fs_get()
 
     unset TAR_OPTIONS
     tar -cf - "./$name"
-  ' sh "$REMOTE_PATH" "$REMOTE_PARENT" "$REMOTE_NAME" |
+  ' sh "$REMOTE_PATH" "$REMOTE_PARENT" "$REMOTE_NAME"
+    printf '%s\n' "$?" > "$GET_STATUS_FILE"
+  ) |
   (
     cd "$LOCAL_EXTRACT" || exit 1
     unset TAR_OPTIONS
     tar -xf -
   )
+  GET_EXTRACT_STATUS="$?"
+  GET_PRODUCER_STATUS="$(cat "$GET_STATUS_FILE")" || GET_PRODUCER_STATUS=
+  rm -f -- "$GET_STATUS_FILE" || :
+  if [ "$GET_EXTRACT_STATUS" -ne 0 ] || [ "$GET_PRODUCER_STATUS" != "0" ]
   then
     rm -rf -- "$LOCAL_EXTRACT"
     log error rsudo-fs transfer-failed operation get path "$REMOTE_PATH"
@@ -226,9 +238,8 @@ rsudo_mod_fs_get()
 
 rsudo_mod_fs_put()
 (
-  # The local tar producer and remote tar consumer are one operation. pipefail
-  # prevents a producer failure from being hidden by a successful consumer.
-  set -o pipefail
+  # The local tar producer and remote tar consumer form one transfer.
+  # Record producer status separately so a successful consumer cannot mask it.
   set -f
 
   [ "$#" -ge 2 ] && [ "$#" -le 4 ] || exit 1
@@ -255,7 +266,8 @@ rsudo_mod_fs_put()
   # du/df values can represent multi-terabyte filesystems. Keep awk for parsing
   # and comparison instead of relying on the minimum integer width guaranteed to
   # POSIX shell arithmetic. valid_integer protects the values before use.
-  LOCAL_SIZE_KB="$(du -sk "$LOCAL_PATH" | awk 'NR == 1 { print $1; exit }')" || exit 1
+  LOCAL_DU_OUTPUT="$(du -sk "$LOCAL_PATH")" || exit 1
+  LOCAL_SIZE_KB="$(printf '%s\n' "$LOCAL_DU_OUTPUT" | awk 'NR == 1 { print $1; exit }')" || exit 1
   valid_integer "$LOCAL_SIZE_KB" || exit 1
 
   # The transfer id is controlled data. Staging names are siblings of the final
@@ -271,7 +283,6 @@ rsudo_mod_fs_put()
   # existing ancestor; newly-created descendants will belong to that filesystem.
   REMOTE_INFO="$(
     rsudo -- sh -c '
-      set -o pipefail
       set -f
 
       path="$1"
@@ -297,12 +308,14 @@ rsudo_mod_fs_put()
         esac
       done
 
-      free="$(df -Pk "$probe" | awk "NR == 2 { print \$4; exit }")" || exit 1
+      free_output="$(df -Pk "$probe")" || exit 1
+      free="$(printf '%s\n' "$free_output" | awk "NR == 2 { print \$4; exit }")" || exit 1
 
       if [ -e "$path" ] || [ -L "$path" ]
       then
         exists=1
-        old="$(du -sk "$path" | awk "NR == 1 { print \$1; exit }")" || exit 1
+        old_output="$(du -sk "$path")" || exit 1
+        old="$(printf '%s\n' "$old_output" | awk "NR == 1 { print \$1; exit }")" || exit 1
       else
         exists=0
         old=0
@@ -374,10 +387,16 @@ rsudo_mod_fs_put()
   # is used, therefore symlinks are archived as symlinks. Extract into a unique
   # sibling directory first and only then rename the complete top-level object
   # to its copy/staging pathname.
-  if ! (
+  # Private local sidecar reports producer failure even when remote tar succeeds.
+  PUT_STATUS_DIR="${TMPDIR:-/tmp}/rsudo-fs-put.${TRANSFER_ID}"
+  (umask 077; mkdir -- "$PUT_STATUS_DIR") || exit 1
+  PUT_STATUS_FILE="$PUT_STATUS_DIR/producer-status"
+
+  (
     cd "$LOCAL_PARENT" || exit 1
     unset TAR_OPTIONS
     tar -cf - "./$LOCAL_NAME"
+    printf '%s\n' "$?" > "$PUT_STATUS_FILE"
   ) |
   rsudo -- sh -c '
     target="$1"
@@ -403,6 +422,12 @@ rsudo_mod_fs_put()
     cd .. || exit 1
     rmdir -- "$extract" || exit 1
   ' sh "$REMOTE_COPY_PATH" "$REMOTE_EXTRACT" "$LOCAL_NAME"
+  PUT_CONSUMER_STATUS="$?"
+  PUT_PRODUCER_STATUS="$(cat "$PUT_STATUS_FILE")" || PUT_PRODUCER_STATUS=
+  rm -f -- "$PUT_STATUS_FILE" || :
+  rmdir -- "$PUT_STATUS_DIR" || :
+
+  if [ "$PUT_CONSUMER_STATUS" -ne 0 ] || [ "$PUT_PRODUCER_STATUS" != "0" ]
   then
     rsudo -- rm -rf -- "$REMOTE_COPY_PATH" "$REMOTE_EXTRACT" 2>/dev/null || :
     log error rsudo-fs transfer-failed operation put path "$REMOTE_PATH"
