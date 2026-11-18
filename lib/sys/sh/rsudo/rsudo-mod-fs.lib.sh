@@ -57,7 +57,7 @@ rsudo_mod_fs_get()
       [ -e "$path" ] || [ -L "$path" ] || exit 1
 
       du_output="$(du -sk "$path")" || exit 1
-      printf '%s\n' "$du_output" | awk "NR == 1 { print \$1; exit }"
+      printf "%s\n" "$du_output" | awk "NR == 1 { print \$1; exit }"
     ' sh "$REMOTE_PATH"
   )" || {
     log error rsudo-fs remote-preflight-failed operation get path "$REMOTE_PATH"
@@ -309,13 +309,13 @@ rsudo_mod_fs_put()
       done
 
       free_output="$(df -Pk "$probe")" || exit 1
-      free="$(printf '%s\n' "$free_output" | awk "NR == 2 { print \$4; exit }")" || exit 1
+      free="$(printf "%s\n" "$free_output" | awk "NR == 2 { print \$4; exit }")" || exit 1
 
       if [ -e "$path" ] || [ -L "$path" ]
       then
         exists=1
         old_output="$(du -sk "$path")" || exit 1
-        old="$(printf '%s\n' "$old_output" | awk "NR == 1 { print \$1; exit }")" || exit 1
+        old="$(printf "%s\n" "$old_output" | awk "NR == 1 { print \$1; exit }")" || exit 1
       else
         exists=0
         old=0
