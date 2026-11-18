@@ -26,22 +26,23 @@ jobs:
         run: |
           set -eu
           sh -n build.sh
+          ! grep -q 'set -o pipefail' lib/sys/sh/rsudo/rsudo-mod-fs.lib.sh
           sh build.sh release
           cd release
-          sha256sum m-rsudo-v0.1.2-all.tar.gz > SHA256SUMS
+          sha256sum m-rsudo-v0.1.3-all.tar.gz > SHA256SUMS
           sha256sum -c SHA256SUMS
-          tar -tzf m-rsudo-v0.1.2-all.tar.gz | grep -q '^bin/'
-          tar -tzf m-rsudo-v0.1.2-all.tar.gz | grep -q '^lib/sh/'
-      - name: Publish immutable v0.1.2 only if absent
+          tar -tzf m-rsudo-v0.1.3-all.tar.gz | grep -q '^bin/'
+          tar -tzf m-rsudo-v0.1.3-all.tar.gz | grep -q '^lib/sh/'
+      - name: Publish immutable v0.1.3 only if absent
         env:
           GH_TOKEN: ${{ github.token }}
         shell: sh
         run: |
           set -eu
-          if gh release view v0.1.2 >/dev/null 2>&1; then
-            echo 'v0.1.2 exists, refusing to replace the immutable release'
+          if gh release view v0.1.3 >/dev/null 2>&1; then
+            echo 'v0.1.3 exists, refusing to replace the immutable release'
             exit 0
           fi
-          gh release create v0.1.2 release/m-rsudo-v0.1.2-all.tar.gz release/SHA256SUMS \
-            --target "$GITHUB_SHA" --title 'm-rsudo v0.1.2' \
-            --notes 'First-party m-rsudo sources for the existing m package manager.'
+          gh release create v0.1.3 release/m-rsudo-v0.1.3-all.tar.gz release/SHA256SUMS \
+            --target "$GITHUB_SHA" --title 'm-rsudo v0.1.3' \
+            --notes 'POSIX sh fix: rsudo fs get/put no longer require pipefail. Producer/consumer exit codes and du/df failures are checked separately. Physical SSH/sudo acceptance requires operator testing.'
