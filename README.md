@@ -5,10 +5,10 @@ commands and all eight original `rsudo` shell modules, with operational
 manuals and the existing remote testlab scenario. No credentials or host
 secrets are stored in this repository.
 
-The immutable `v0.1.0`, `v0.1.1` and `v0.1.2` GitHub releases were
+The immutable `v0.1.0`, `v0.1.1`, `v0.1.2` and `v0.1.3` GitHub releases were
 built from their respective source revisions. `pkg-catalog/pkg-schema-v2`
 records their exact separate versions and command/library projections.
-The current `build.sh` emits a distinct `v0.1.2` archive; previous release
+The current `build.sh` emits a distinct `v0.1.3` archive; previous release
 assets must never be replaced.
 
 `rsudo` uses the separately installed `m-core` shell libraries. For
@@ -44,3 +44,17 @@ terminating a noninteractive shell with an unexpected setup status. Hosted
 public installation, error-branch, source-injection and local PTY checks are
 tracked separately by the `r1-installed-v012` workflow. Such tests cannot
 establish a privileged SSH/sudo or remote interactive browser PASS.
+
+## v0.1.3 — POSIX sh filesystem transfer compatibility
+
+`rsudo fs get` and `put` no longer require `set -o pipefail`.
+The producer status for each tar stream is independently recorded in a
+private local sidecar and checked together with the consumer result.
+Preflight `du` and `df` commands are checked before `awk` parses their output.
+This prevents the known false-success case in which a tar consumer accepts
+a partial archive while its producer reports an error. Remaining filesystem
+and interruption/cleanup risks are not eliminated by this change.
+
+The release build and static checks are not a substitute for real SSH/sudo
+validation. Install the unchanged release on the operator's Ubuntu host and
+rerun the normal `localhost` filesystem suite before physical acceptance.
