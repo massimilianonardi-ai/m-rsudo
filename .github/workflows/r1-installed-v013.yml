@@ -1,0 +1,51 @@
+name: R1 real v0.1.3 rsudo package installation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/r1-installed-v013-test.sh'
+      - '.github/scripts/r1-pty-admin-test.py'
+      - '.github/workflows/r1-installed-v013.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: rsudo
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: massimilianonardi-ai/m-os
+          ref: 3c0f5b8783fb8d319d5f4db23e902f77b7ddc924
+          path: m-source
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: massimilianonardi-ai/pkg-catalog
+          ref: eacaa2ac25f1b7a983269e1af2b96bf3c921b4cf
+          path: catalog
+          persist-credentials: false
+      - name: Install coordinated published GitHub releases through public m pkg
+        shell: sh
+        run: |
+          set -eu
+          cd m-source
+          ./m osarch update
+          [ "$(git -C ../catalog rev-parse HEAD)" = eacaa2ac25f1b7a983269e1af2b96bf3c921b4cf ] || exit 9
+          conf=$(./m state-path system sys pkg conf)
+          mkdir -p -- "$conf"
+          printf '%s\n' "$GITHUB_WORKSPACE/catalog" > "$conf/catalog"
+          ./m pkg install m-core@v0.1.1 m-term@v0.1.1 m-rsudo@v0.1.3
+          ./m sh ../rsudo/.github/scripts/r1-installed-v013-test.sh
