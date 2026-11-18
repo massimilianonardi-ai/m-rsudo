@@ -20,7 +20,9 @@ DESCRIPTION
     Regular files, directories and symbolic links are transferred as filesystem
     objects. The transfer stream uses tar without symlink-dereference options;
     caller TAR_OPTIONS is ignored for the transfer so it cannot silently change
-    link semantics.
+    link semantics. The POSIX sh implementation checks both ends of each
+    tar pipeline, so a producer failure cannot be masked by a successful
+    consumer. Preflight du and df failures likewise remain observable.
 
 FUNCTIONS
     rsudo_mod_fs_rm operand...
