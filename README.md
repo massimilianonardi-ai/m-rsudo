@@ -16,7 +16,7 @@ assets must never be replaced.
 the exact three installed concretes in the invoking shell:
 
 ```sh
-context pkg=m-core@v0.1.1 pkg=m-term@v0.1.1 pkg=m-rsudo@v0.1.2
+context pkg=m-core@v0.1.1 pkg=m-term@v0.1.1 pkg=m-rsudo@v0.1.3
 ```
 
 The GitHub-hosted Ubuntu/macOS public `pkg install` test (`m-core` run
@@ -58,3 +58,5 @@ and interruption/cleanup risks are not eliminated by this change.
 The release build and static checks are not a substitute for real SSH/sudo
 validation. Install the unchanged release on the operator's Ubuntu host and
 rerun the normal `localhost` filesystem suite before physical acceptance.
+Public non-network package install and command-entrypoint checks are tracked
+by the distinct `r1-installed-v013` Ubuntu/macOS workflow.
