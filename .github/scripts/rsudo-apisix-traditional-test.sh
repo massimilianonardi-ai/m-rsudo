@@ -48,4 +48,31 @@ invalid_status=$?
 set -e
 [ "$delete_status" -eq 22 ]
 [ "$invalid_status" -eq 64 ]
+
+# Configuration fallback: recognize the named admin entry of config.yaml.
+mkdir -p "$tmp/conf"
+cat > "$tmp/conf/config.yaml" <<'YAML'
+deployment:
+  admin:
+    admin_key:
+      - name: "viewer"
+        key: viewer-only
+      - name: "admin"
+        key: "config-admin-test"
+YAML
+unset APISIX_KEY
+RSUDO_APISIX_CONFIG_PATH="$tmp/conf/config.yaml"
+value=$(rsudo_mod_apisix_key)
+[ "$value" = config-admin-test ]
+output=$(rsudo_mod_apisix_get routes)
+printf '%s\n' "$output" | grep -Fqx 'HEADER:X-API-KEY: config-admin-test'
+
+# Recreated auth helpers retain the route and plugin contract.
+APISIX_KEY='fake-secret'
+rsudo_mod_apisix_set_auth_vars gateway.test 443 keycloak.test 443 master client-id client-secret
+output=$(rsudo_mod_apisix_create_route_authn_authz protected users service login-resource)
+printf '%s\n' "$output" | grep -Fq '"openid-connect":{'
+printf '%s\n' "$output" | grep -Fq '"authz-keycloak":{'
+printf '%s\n' "$output" | grep -Fq '"permissions":["login-resource"]'
+printf '%s\n' "$output" | grep -Fq '"service_id":"service"'
 printf '%s\n' 'APISIX Traditional adapter mock: PASS'
