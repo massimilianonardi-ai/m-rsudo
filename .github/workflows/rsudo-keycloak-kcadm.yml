@@ -45,8 +45,7 @@ jobs:
         shell: sh
         run: |
           set -eu
-          # Trace only this credential-free local mock test to diagnose cross-platform assertions.
-          sh -x .github/scripts/rsudo-keycloak-kcadm-test.sh
+          sh .github/scripts/rsudo-keycloak-kcadm-test.sh
 
       - name: Verify distributable package includes the new adapter
         shell: sh

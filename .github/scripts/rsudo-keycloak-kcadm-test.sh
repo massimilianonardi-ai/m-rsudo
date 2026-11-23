@@ -55,11 +55,11 @@ result=$(rsudo_mod_keycloak_kcadm help)
 printf '%s\n' "$result" | grep -qx 'PASSWORD_SET:'
 
 set +e
-RSUDO_KEYCLOAK_PATH= rsudo_mod_keycloak_kcadm >/dev/null 2>&1
+(RSUDO_KEYCLOAK_PATH=; rsudo_mod_keycloak_kcadm) >/dev/null 2>&1
 local_rc=$?
-RSUDO_KEYCLOAK_PATH=relative/path rsudo_mod_keycloak_kcadm >/dev/null 2>&1
+(RSUDO_KEYCLOAK_PATH=relative/path; rsudo_mod_keycloak_kcadm) >/dev/null 2>&1
 relative_rc=$?
-RSUDO_KEYCLOAK_PATH=/nonexistent/remote/kcadm.sh rsudo_mod_keycloak_kcadm >/dev/null 2>&1
+(RSUDO_KEYCLOAK_PATH=/nonexistent/remote/kcadm.sh; rsudo_mod_keycloak_kcadm) >/dev/null 2>&1
 missing_rc=$?
 rsudo_mod_keycloak_kcadm failure >"$work/stdout" 2>"$work/stderr"
 fail_rc=$?
