@@ -7,7 +7,7 @@ output_root=$1
 self_dir=${0%/*}
 [ "$self_dir" != "$0" ] || self_dir=.
 command -p -- mkdir -p -- "$output_root/root/bin" "$output_root/root/lib/sh" "$output_root/root/res/manual"
-for name in rsudo rsudo-mod-exec rsudo-mod-fs rsudo-mod-db-pg rsudo-mod-apisix rsudo-mod-apisixlegacy rsudo-mod-keycloak rsudo-mod-keycloaklegacy
+for name in rsudo rsudo-mod-exec rsudo-mod-fs rsudo-mod-db-pg rsudo-mod-apisix rsudo-mod-apisixlegacy
 do
   source_file="$self_dir/lib/sys/sh/rsudo/$name.lib.sh"
   [ -f "$source_file" ] && [ -r "$source_file" ] || exit 4
