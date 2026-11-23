@@ -34,7 +34,8 @@ jobs:
           set -eu
           sh -n lib/sys/sh/rsudo/rsudo-mod-apisix.lib.sh
           sh -n .github/scripts/rsudo-apisix-traditional-test.sh
-          sh .github/scripts/rsudo-apisix-traditional-test.sh
+          # Diagnose only synthetic, credential-free test fixtures.
+          sh -x .github/scripts/rsudo-apisix-traditional-test.sh
       - name: Verify package contains both new and unmodified legacy modules
         shell: sh
         run: |
