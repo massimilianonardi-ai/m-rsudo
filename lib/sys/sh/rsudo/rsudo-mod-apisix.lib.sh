@@ -151,20 +151,56 @@ then
   exit 66
 fi
 
-# Original rsudo-mod-apisixlegacy key() extraction, adapted to the
-# operator-supplied path rather than /usr/local/apisix/conf/config.yaml.
-ADMIN_KEY_PREFIX="$(sed -n 's/admin_key:.*//p' "$_apisix_config")" || exit 67
-ADMIN_KEY="$(sed "s/$ADMIN_KEY_PREFIX//" "$_apisix_config" |
-  sed -n '/admin_key:/,/^[[:lower:]]/{//!p;}' |
-  tr '\n' '|' |
-  sed -e 's/ //g' -e 's/.*admin|//' -e 's/|.*//' -e 's/key://')" || exit 67
-
-if [ -z "$ADMIN_KEY" ]
-then
-  printf '%s\n' 'rsudo apisix key: admin key not found in config.yaml' >&2
-  exit 67
-fi
-printf '%s\n' "$ADMIN_KEY"
+# Adapted from legacy key(): read the named "admin" key inside admin_key.
+# Unlike the old greedy sed pipeline, stop at the next list item, so a
+# following "role: admin" or "viewer" cannot replace the selected value.
+awk '
+  function scalar(s) {
+    sub(/^[[:space:]]+/, "", s)
+    sub(/[[:space:]]+$/, "", s)
+    if (s ~ /^".*"$/ || s ~ /^\047.*\047$/)
+      s=substr(s, 2, length(s)-2)
+    return s
+  }
+  function save() {
+    if (!found && name=="admin" && key!="") {
+      print key
+      found=1
+    }
+  }
+  {
+    line=$0
+    if (line ~ /^[[:space:]]*(#|$)/) next
+    indent=match(line, /[^[:space:]]/)-1
+    if (!within) {
+      if (line ~ /^[[:space:]]*admin_key:[[:space:]]*(#.*)?$/) {
+        within=1
+        base_indent=indent
+      }
+      next
+    }
+    if (indent<=base_indent) {
+      save()
+      within=0
+      next
+    }
+    if (line ~ /^[[:space:]]*-[[:space:]]*name:[[:space:]]*/) {
+      save()
+      name=line
+      sub(/^[[:space:]]*-[[:space:]]*name:[[:space:]]*/, "", name)
+      name=scalar(name)
+      key=""
+      next
+    }
+    if (line ~ /^[[:space:]]*key:[[:space:]]*/) {
+      key=line
+      sub(/^[[:space:]]*key:[[:space:]]*/, "", key)
+      key=scalar(key)
+    }
+  }
+  END { save(); if (!found) exit 1 }
+' "$_apisix_config" ||
+  { printf '%s\n' 'rsudo apisix key: admin key not found in config.yaml' >&2; exit 67; }
 APISIX_KEY_REMOTE
   } | RSUDO_INTERACTIVE=false rsudo
 )
