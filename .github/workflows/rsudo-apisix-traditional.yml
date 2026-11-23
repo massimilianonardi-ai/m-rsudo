@@ -1,0 +1,44 @@
+name: Verify rsudo APISIX Traditional adapter
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/sys/sh/rsudo/rsudo-mod-apisix.lib.sh'
+      - 'res/sys/manual/rsudo-mod-apisix.lib.sh'
+      - '.github/scripts/rsudo-apisix-traditional-test.sh'
+      - '.github/workflows/rsudo-apisix-traditional.yml'
+      - 'build.sh'
+  pull_request:
+    paths:
+      - 'lib/sys/sh/rsudo/rsudo-mod-apisix.lib.sh'
+      - 'res/sys/manual/rsudo-mod-apisix.lib.sh'
+      - '.github/scripts/rsudo-apisix-traditional-test.sh'
+      - '.github/workflows/rsudo-apisix-traditional.yml'
+      - 'build.sh'
+permissions:
+  contents: read
+jobs:
+  traditional:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify syntax and local Admin API forwarding
+        shell: sh
+        run: |
+          set -eu
+          sh -n lib/sys/sh/rsudo/rsudo-mod-apisix.lib.sh
+          sh -n .github/scripts/rsudo-apisix-traditional-test.sh
+          sh .github/scripts/rsudo-apisix-traditional-test.sh
+      - name: Verify package contains both new and unmodified legacy modules
+        shell: sh
+        run: |
+          set -eu
+          sh build.sh release
+          cmp lib/sys/sh/rsudo/rsudo-mod-apisix.lib.sh release/root/lib/sh/rsudo-mod-apisix.lib.sh
+          cmp lib/sys/sh/rsudo/rsudo-mod-apisixlegacy.lib.sh release/root/lib/sh/rsudo-mod-apisixlegacy.lib.sh
