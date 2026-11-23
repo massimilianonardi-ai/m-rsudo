@@ -72,7 +72,7 @@ SECURITY / BOUNDARIES
     Avoid debugging mechanisms that log stdin or generated shell source.
 
     Requires a POSIX shell plus curl (including -H @/dev/fd/3) on the
-    remote target. The key extraction uses existing sed and tr utilities.
+    remote target. The key extraction uses the existing POSIX awk utility.
     The module does not verify the active APISIX deployment mode: only
     Traditional is supported by contract. No real remote deployment or
     live APISIX behavior is claimed solely from mock tests.
