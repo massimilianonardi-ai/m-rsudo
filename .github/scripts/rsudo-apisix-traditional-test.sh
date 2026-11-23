@@ -1,78 +1,91 @@
 #!/bin/sh
-# Non-network behavior checks; no real SSH/sudo/APISIX server is contacted.
+# Local mock checks for the exact two public APISIX Traditional functions.
+# No SSH/sudo and no real APISIX instance is contacted.
 set -eu
-root=${0%/*}/../..
-. "$root/lib/sys/sh/rsudo/rsudo-mod-apisix.lib.sh"
-tmp=$(mktemp -d "${TMPDIR:-/tmp}/apisix-test.XXXXXXXX")
-trap 'rm -rf "$tmp"' EXIT HUP INT TERM
-mkdir -p "$tmp/bin"
-cat >"$tmp/bin/curl" <<'STUB'
-#!/bin/sh
-method=none; url=none; header=none; data=none
-while [ "$#" -gt 0 ]; do
-  case $1 in
-    --request) method=$2; shift 2 ;;
-    --header)
-      case $2 in @*) header=$(cat "${2#@}") ;; esac
-      shift 2 ;;
-    --data-binary) data=$(cat); shift 2 ;;
-    http://*|https://*) url=$1; shift ;;
-    *) shift ;;
-  esac
-done
-printf 'METHOD:%s\nURL:%s\nHEADER:%s\nDATA:%s\n' "$method" "$url" "$header" "$data"
-[ "$method" != DELETE ] || exit 22
-STUB
-chmod +x "$tmp/bin/curl"
-PATH="$tmp/bin:$PATH"; export PATH
+src=${0%/*}/../../lib/sys/sh/rsudo/rsudo-mod-apisix.lib.sh
+. "$src"
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/rsudo-apisix-test.XXXXXXXX")
+trap 'rm -rf "$tmp"' 0 1 2 3 15
+
+# Both APIs send source over stdin. Mock remote rsudo by executing sh -s.
 rsudo()
 (
   [ "$#" -eq 0 ] || exit 99
   [ "${RSUDO_INTERACTIVE-}" = false ] || exit 98
   /bin/sh -s
 )
-APISIX_KEY="a'b-special"
-output=$(rsudo_mod_apisix_api 'routes/demo' PUT '{"uri":"/demo"}')
-printf '%s\n' "$output" | grep -Fqx 'METHOD:PUT'
-printf '%s\n' "$output" | grep -Fqx 'URL:http://127.0.0.1:9180/apisix/admin/routes/demo'
-printf '%s\n' "$output" | grep -Fqx "HEADER:X-API-KEY: $APISIX_KEY"
-printf '%s\n' "$output" | grep -Fqx 'DATA:{"uri":"/demo"}'
-output=$(rsudo_mod_apisix_create_route_simple id '/x /y' service)
-printf '%s\n' "$output" | grep -Fq '"uris":["/x","/y"]'
-printf '%s\n' "$output" | grep -Fq '"service_id":"service"'
-set +e
-rsudo_mod_apisix_del routes/id >/dev/null 2>&1
-delete_status=$?
-rsudo_mod_apisix_api routes BADMETHOD >/dev/null 2>&1
-invalid_status=$?
-set -e
-[ "$delete_status" -eq 22 ]
-[ "$invalid_status" -eq 64 ]
+mkdir -p "$tmp/bin"
+cat > "$tmp/bin/curl" <<'MOCK_CURL'
+#!/bin/sh
+method= url= header= body= has_body=no
+while [ "$#" -gt 0 ]
+do
+  case $1 in
+    --request) method=$2; shift 2 ;;
+    --header)
+      case $2 in
+        @*) header=$(cat "${2#@}") ;;
+      esac
+      shift 2 ;;
+    --data-binary) has_body=yes; body=$(cat); shift 2 ;;
+    http://*|https://*) url=$1; shift ;;
+    *) shift ;;
+  esac
+done
+printf 'METHOD:%s\nURL:%s\nKEY:%s\nBODY_SET:%s\nBODY:%s\n' \
+  "$method" "$url" "$header" "$has_body" "$body"
+[ "$method" != DELETE ] || exit 22
+MOCK_CURL
+chmod +x "$tmp/bin/curl"
+PATH="$tmp/bin:$PATH"; export PATH
 
-# Configuration fallback: recognize the named admin entry of config.yaml.
-mkdir -p "$tmp/conf"
-cat > "$tmp/conf/config.yaml" <<'YAML'
+# Only the two documented public functions may be exported.
+[ "$(grep -c '^rsudo_mod_apisix_[a-zA-Z0-9_]*()' "$src")" -eq 2 ]
+APISIX_KEY="secret with ' and \$(not-executed)"
+got=$(rsudo_mod_apisix_rest PUT 'routes/demo?x=a&y=b' '{"uri":"/x", "value":"a'\''b"}')
+printf '%s\n' "$got" | grep -Fqx 'METHOD:PUT'
+printf '%s\n' "$got" | grep -Fqx 'URL:http://127.0.0.1:9180/apisix/admin/routes/demo?x=a&y=b'
+printf '%s\n' "$got" | grep -Fqx "KEY:X-API-KEY: $APISIX_KEY"
+printf '%s\n' "$got" | grep -Fqx 'BODY_SET:yes'
+printf '%s\n' "$got" | grep -Fqx 'BODY:{"uri":"/x", "value":"a'\''b"}'
+got=$(rsudo_mod_apisix_rest GET routes)
+printf '%s\n' "$got" | grep -Fqx 'BODY_SET:no'
+set +e
+rsudo_mod_apisix_rest DELETE routes/demo >/dev/null 2>&1
+delete_rc=$?
+(rsudo_mod_apisix_rest FOO routes) >/dev/null 2>&1
+invalid_rc=$?
+(unset APISIX_KEY; rsudo_mod_apisix_rest GET routes) >/dev/null 2>&1
+missing_rc=$?
+rsudo_mod_apisix_key relative/file.yaml >/dev/null 2>&1
+path_rc=$?
+set -e
+[ "$delete_rc" -eq 22 ]
+[ "$invalid_rc" -eq 64 ]
+[ "$missing_rc" -eq 64 ]
+[ "$path_rc" -eq 64 ]
+
+# Exercise a standard APISIX Traditional admin_key block.
+mkdir -p "$tmp/conf space"
+cat > "$tmp/conf space/config.yaml" <<'APISIX_CONFIG'
 deployment:
   admin:
     admin_key:
-      - name: "viewer"
-        key: viewer-only
-      - name: "admin"
-        key: "config-admin-test"
-YAML
-unset APISIX_KEY
-RSUDO_APISIX_CONFIG_PATH="$tmp/conf/config.yaml"
-value=$(rsudo_mod_apisix_key)
-[ "$value" = config-admin-test ]
-output=$(rsudo_mod_apisix_get routes)
-printf '%s\n' "$output" | grep -Fqx 'HEADER:X-API-KEY: config-admin-test'
-
-# Recreated auth helpers retain the route and plugin contract.
-APISIX_KEY='fake-secret'
-rsudo_mod_apisix_set_auth_vars gateway.test 443 keycloak.test 443 master client-id client-secret
-output=$(rsudo_mod_apisix_create_route_authn_authz protected users service login-resource)
-printf '%s\n' "$output" | grep -Fq '"openid-connect":{'
-printf '%s\n' "$output" | grep -Fq '"authz-keycloak":{'
-printf '%s\n' "$output" | grep -Fq '"permissions":["login-resource"]'
-printf '%s\n' "$output" | grep -Fq '"service_id":"service"'
-printf '%s\n' 'APISIX Traditional adapter mock: PASS'
+      - name: admin
+        key: custom-admin-key
+        role: admin
+      - name: viewer
+        key: viewer-key
+        role: viewer
+APISIX_CONFIG
+got=$(rsudo_mod_apisix_key "$tmp/conf space/config.yaml")
+[ "$got" = custom-admin-key ]
+APISIX_KEY=$got
+got=$(rsudo_mod_apisix_rest GET upstreams)
+printf '%s\n' "$got" | grep -Fqx 'KEY:X-API-KEY: custom-admin-key'
+set +e
+rsudo_mod_apisix_key "/nonexistent/config.yaml" >/dev/null 2>&1
+notfound_rc=$?
+set -e
+[ "$notfound_rc" -eq 66 ]
+printf '%s\n' 'rsudo APISIX two-API local tests: PASS'

@@ -1,4 +1,4 @@
-name: Verify rsudo APISIX Traditional adapter
+name: Verify rsudo APISIX two-API adapter
 on:
   push:
     branches: [main]
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Verify syntax and local Admin API forwarding
+      - name: Verify rest and key wrappers using mocked rsudo and curl
         shell: sh
         run: |
           set -eu
