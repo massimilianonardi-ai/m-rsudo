@@ -1,21 +1,26 @@
-# Deployment subsystem — index (initial integration slice)
+# rsudo-deploy — documentation index
 
-**Repository:** `m-rsudo`. **Status:** integration slice implemented; deployment resource management **not implemented**.
-**Baseline evidence:** `m-rsudo@fad7b8b49ea9b966e56013f1a66736587633ba65`.
+**Product:** `m-rsudo`. **Revision type:** specification update approved by operator, 2026-11-24. **Existing code baseline:** `05d1b08791a3f85c47b619a2f1169edbe5953332`. **Status:** entrypoint-only implementation exists; comprehensive deployment is not implemented.
 
-The operator approved retaining the established rsudo credential architecture and using: native CLI `rsudo deploy`, a source-only menu library, a standalone `rsudo-deploy` entrypoint, and a single `Deploy` entry in `rsudo-admin`.
+This directory documents an **orchestrator** that uses the established `rsudo` model for remote work and local libraries for local work. Current executable still forwards every CLI argument to `rsudo deploy`; the approved updated CLI contract is **not implemented yet**.
 
-## Documents
+| Topic | Document |
+| --- | --- |
+| Goal and scope | [Objectives](objectives.md) |
+| Binding requirements | [Requirements](requirements.md) |
+| Operator workflows | [Use cases](use-cases.md) |
+| Observable outcomes | [Acceptance](acceptance.md) |
+| System boundaries | [Architecture](architecture.md), [Components](components.md) |
+| CLI/API | [Interfaces](interfaces.md) |
+| First infrastructure scenario | [Initial scope](initial-scenario.md) |
+| Desired project and observed state | [Plan model](plan-model.md) |
+| Preparation/execution lifecycle | [Deployment lifecycle](deployment-lifecycle.md) |
+| Audit and evidence | [Logging and evidence](logging-evidence.md) |
+| Protected dependencies and task boundaries | [Component protection](component-protection.md) |
+| Decision history | [Decisions](decisions.md) |
+| Verification | [Tests](tests.md), [Supervision](supervision.md) |
+| Sequencing | [Execution plan](execution-plan.md) |
 
-- [Objectives](objectives.md) — what deployment administration must achieve.
-- [Requirements](requirements.md) — preserved contracts and requested capabilities.
-- [Use cases](use-cases.md) — representative operator flows.
-- [Acceptance](acceptance.md) — acceptance and observed evidence.
-- [Architecture](architecture.md) — component boundaries and execution paths.
-- [Interfaces](interfaces.md) — public and internal function contracts.
-- [Decisions](decisions.md) — approved choices and deferred questions.
-- [Tests](tests.md) — new integration checks only.
-- [Execution plan](execution-plan.md) — incremental completion path.
-- [Supervision](supervision.md) — checked milestone evidence.
+Authority labels: **approved** = explicit operator decision; **proposed** = design recommendation awaiting review; **implemented** = present in repository; **verified** = linked actual test evidence. Do not infer one from another.
 
-**Important:** rsudo authentication, decryption and unattended credential management are already-established product capabilities. This project does not redesign or re-validate those internals. New test scope is integration of deployment entrypoints and their expected shell scope.
+Credential decryption, unattended access and transport remain exclusively owned by rsudo/m-core. No redesign or retest of those established subsystems is in scope.

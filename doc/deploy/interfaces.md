@@ -1,16 +1,14 @@
-# Interfaces and failure contracts (L5)
+# Interfaces — current vs approved future contract (L5)
 
-| ID | Entry | Owner | Contract |
+| ID | Interface | Owner | Contract / status |
 | --- | --- | --- | --- |
-| IF-01 | `rsudo deploy help` | `rsudo-mod-deploy.lib.sh` | Print first-slice CLI help, zero on success; rsudo's established credential validation applies first. |
-| IF-02 | `rsudo-deploy` | `bin/sys/rsudo-deploy` | Load m environment and source-only menu library, call `rsudo_deploy_menu`. |
-| IF-03 | `rsudo-deploy <args>` | `bin/sys/rsudo-deploy` | `exec rsudo deploy "$@"`; preserve original argument vector and exit code. |
-| IF-04 | `rsudo_deploy_menu` | `rsudo-deploy.lib.sh` | Source-only function. Runs in subshell; Escape returns success, invalid menu/setup returns nonzero. |
-| IF-05 | `rsudo-admin` Deploy entry | `bin/sys/rsudo-admin` | Resolve selected m-rsudo package view, source library in subshell, invoke menu; report outcome in admin footer. |
-| IF-06 | Existing rsudo group variables | `rsudo.lib.sh` / m-core | Existing credential contract; consumed, never redefined. |
+| IF-01 | `rsudo [options] deploy <remote operation>` | `rsudo-mod-deploy.lib.sh` | Remote-only rsudo module. Existing rsudo dispatcher, credentials and options fully preserved. `help` only currently implemented. |
+| IF-02 | `rsudo-deploy` | `bin/sys/rsudo-deploy` | With no args loads sourceable menu library and calls `rsudo_deploy_menu`. Initial implementation. |
+| IF-03 | `rsudo-deploy <args>` | `bin/sys/rsudo-deploy` → `rsudo-deploy.lib.sh` | Calls proposed `rsudo_deploy_cli "$@"` function. **APPROVED, not implemented**. Current `exec rsudo deploy "$@"` is a historical interim implementation to replace. |
+| IF-04 | `rsudo_deploy_menu` | `rsudo-deploy.lib.sh` | Source-only, enters menu in subshell, performs orchestration via local functions and remote rsudo calls when needed. Initial menu present. |
+| IF-05 | Deploy menu entry | `rsudo-admin` | Only new menu item; source own selected package library in subshell, call `rsudo_deploy_menu`; does not own deploy business logic. Implemented. |
+| IF-06 | Remote credential groups and native commands | Existing `rsudo` / `m-core` | Consume existing unexported shell state and native rsudo options; no changes or new auth flow. |
+| IF-07 | Desired project store | New deploy-local library (TBD) | Load/validate/revise selected JSON project resources without remote effects; schema not yet agreed. |
+| IF-08 | Observe/diff/prepare/apply/verify | New deploy orchestration libraries (TBD) | Stable explicit scopes, immutable recorded plan/evidence, remote adapters only for remote effects; signatures TBD. |
 
-Only `rsudo_deploy_menu` is exposed as a menu entrypoint. Helpers prefixed `_rsudo_deploy_` are implementation details and not stable external APIs.
-
-**Current limitation:** in the first slice, interactive menu supports loading a credentials file, listing/selecting loaded groups, and CLI usage. Infrastructure-resource commands will be added only after their models and safety contracts are defined.
-
-For execution and errors, see [use cases](use-cases.md) and [tests](tests.md).
+**No premature public verb grammar** is approved. Local vs remote command routing is a design requirement; exact subcommands and selector syntax must be specified before CLI changes. Source-only functions should not run on load; avoid duplicating policy logic between menu and CLI.

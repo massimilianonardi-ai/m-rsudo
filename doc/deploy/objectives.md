@@ -1,11 +1,18 @@
-# Objectives — deploy (L1)
+# Objectives (L1)
 
-**Status:** approved direction; detailed resource scope still being formalized.
+**Approved scope, 2026-11-24.** Build `rsudo-deploy` in existing `m-rsudo` as a cohesive deployment orchestration product with a complete CLI and independent interactive menu. Provide a staged, reviewable **desired project** and apply its whole or selected scope to existing servers using existing rsudo capabilities.
 
-Provide an administrative tool for the user's application and web infrastructure, reusing existing rsudo modules and remote access model. Support human-guided changes and unattended execution without embedding remote passwords/secrets in deployment configuration.
+## First accepted target outcome
 
-The operator wants one cohesive product in `m-rsudo`: native `rsudo deploy` CLI, an independent `rsudo-deploy` menu executable, and a small menu hook from `rsudo-admin`.
+Administer **already-existing APISIX, Keycloak and nginx instances** so an operator can publish a set of web applications consisting of **HTML, JavaScript and CSS** under specified URLs, protected by Keycloak-backed authentication and authorization at the intended access boundary. More resource kinds will be introduced incrementally.
 
-**Not in scope for the initial slice:** actual deployment mutation, database reset, product configuration changes, live server access, altering rsudo credential semantics, a new plugin system, a second repository.
+## Quality goals
 
-Future resource coverage includes deployed services, packages, applications, Keycloak, APISIX, PostgreSQL, GeoServer, web servers and related infrastructure, subject to separate documented contracts.
+- Prepare long-running deployments thoroughly: discover actual state, compare to plan, identify blockers/dependencies before execution.
+- Execute selected authorized changes, log reliably, verify real outcomes and expose residual discrepancies.
+- Support unattended execution within rsudo's established remote credentials model, without plaintext secrets in plans.
+- Keep small components with explicit, testable ownership; refer missing tool/module functionality to **separate tasks** rather than changing them here.
+
+## Exclusions
+
+No changes to rsudo, rsudo fs/db-pg/exec or the credential architecture. Change rsudo-admin **only** by adding the Deploy menu entry. Changes to rsudo apisix/keycloak/keysix require prior explicit operator consent and are handled by separate tasks. No autonomous remediation/redeployment when drift is detected. No production execution authorized by these specifications.

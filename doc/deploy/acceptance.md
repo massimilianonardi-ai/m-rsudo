@@ -1,16 +1,18 @@
-# Acceptance and current evidence (L3/L11)
+# Acceptance (L3/L11) — observed vs future
 
-The first delivery slice is **interface wiring**, not a finished infrastructure manager.
+Existing first-slice **source interface** evidence: [Ubuntu/macOS synthetic CI](https://github.com/massimilianonardi-ai/m-rsudo/actions/runs/45345542189), commit `3f80ce65`. It established menu sourcing, synthetic credential-group visibility, wrapper argument forwarding and packaging. The forwarding behavior is now **superseded as a future CLI contract**; CI PASS is historical, not proof of the revised CLI.
 
-| Check | Expected | Observed |
+| ID | Target acceptance | Current evidence |
 | --- | --- | --- |
-| ACCEPT-01 | Native rsudo dispatcher resolves `deploy help` with ordinary rsudo credentials. | Source integration added; no actual SSH or installation run |
-| ACCEPT-02 | Admin selection invokes same source-only menu in a subshell and returns. | PASS in synthetic UI test on Ubuntu/macOS; real interactive PTY not tested |
-| ACCEPT-03 | Standalone executable launches menu without operands and forwards with operands. | PASS in synthetic invocation on Ubuntu/macOS; installed m-os package run pending |
-| ACCEPT-04 | No changes to `rsudo.lib.sh`, credential encryption or existing module implementations. | Verified by changed-file scope |
-| ACCEPT-05 | New module/lib/executable are present in build projection. | PASS in source build on Ubuntu/macOS; package install run pending |
-| ACCEPT-06 | No remote operations are launched by first-slice menu items. | Confirmed from source; operational tests pending |
+| ACCEPT-01 | `rsudo-deploy` menu invoked alone or from rsudo-admin and returns cleanly | Initial synthetic integration PASS |
+| ACCEPT-02 | `rsudo-deploy <args>` calls library CLI; local operation does **not** call rsudo; remote operation delegates via established rsudo | **Not implemented/tested** |
+| ACCEPT-03 | Multi-step project edit/revision makes no remote changes | Pending |
+| ACCEPT-04 | Selected/full plan compilation yields reproducible diff, dependency ordering and actionable blockers | Pending |
+| ACCEPT-05 | Preflight rejects unexamined blockers; long-running plan has durable progress/restart/reconciliation evidence | Pending design |
+| ACCEPT-06 | Execute only approved change scope and honor explicit destructive authorization | Pending |
+| ACCEPT-07 | For web app URL: verify accessible assets for entitled identity and enforced denial for unauthenticated/unauthorized access at the real public boundary | Pending; topology/auth model not specified |
+| ACCEPT-08 | Final report correlates each attempted operation with independently observed postconditions and remaining drift; never states success based only on exit code | Pending |
+| ACCEPT-09 | Detect changed server state after plan preparation and avoid silently applying a stale plan | Pending details |
+| ACCEPT-10 | No modifications to protected rsudo components and no production execution without authorization | Current source baseline intact; monitor continuously |
 
-No claim of rsudo credential-model verification is made or needed here; it is treated as an established dependency. Follow [tests](tests.md) for integration-specific verification.
-
-**Evidence:** [deployment entrypoint CI, Ubuntu and macOS](https://github.com/massimilianonardi-ai/m-rsudo/actions/runs/45345542189), commit `3f80ce65`. The integration checks do not exercise or question rsudo's established credential transport. They do not establish remote deployment readiness.
+**Acceptance limitation:** logs alone cannot guarantee configuration state or security. Certification of outcome requires applicable postcondition readback and external access tests with evidence. No new remote deploy behavior has been verified.
