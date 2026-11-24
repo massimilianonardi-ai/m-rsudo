@@ -16,3 +16,7 @@ Existing first-slice **source interface** evidence: [Ubuntu/macOS synthetic CI](
 | ACCEPT-10 | No modifications to protected rsudo components and no production execution without authorization | Current source baseline intact; monitor continuously |
 
 **Acceptance limitation:** logs alone cannot guarantee configuration state or security. Certification of outcome requires applicable postcondition readback and external access tests with evidence. No new remote deploy behavior has been verified.
+
+## First-scenario refinement
+
+[SCN-01 acceptance cases](scenario-01-acceptance.md) expand the web application checks and negative cases. They are proposed, not executed; review [open scenario decisions](scenario-01-decisions.md) before fixing acceptance or implementing dependent contracts.

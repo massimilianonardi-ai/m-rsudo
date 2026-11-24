@@ -21,3 +21,7 @@
 **Security constraint:** Browser JavaScript cannot enforce server-side access controls or hold service credentials securely. If the public requirement is that the *static assets themselves* are access controlled, the public request path must enforce it before delivering those assets. This is an acceptance criterion, not an assumed plugin choice.
 
 **Dependency rule:** if the current apisix/keycloak/keysix/other tools cannot satisfy an identified contract, raise a separate task and wait for its result before using that capability.
+
+## Detailed scenario review
+
+See [SCN-01 functional specification](scenario-01-functional.md), [verified source dependency contracts](scenario-01-dependencies.md), [candidate acceptance cases](scenario-01-acceptance.md) and [operator decision review](scenario-01-decisions.md). These proposals are not yet approved or implemented.

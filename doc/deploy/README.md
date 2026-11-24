@@ -12,7 +12,7 @@ This directory documents an **orchestrator** that uses the established `rsudo` m
 | Observable outcomes | [Acceptance](acceptance.md) |
 | System boundaries | [Architecture](architecture.md), [Components](components.md) |
 | CLI/API | [Interfaces](interfaces.md) |
-| First infrastructure scenario | [Initial scope](initial-scenario.md) |
+| First infrastructure scenario | [Initial scope](initial-scenario.md), [SCN-01 functional specification](scenario-01-functional.md), [dependencies](scenario-01-dependencies.md), [acceptance](scenario-01-acceptance.md), [open decisions](scenario-01-decisions.md) |
 | Desired project and observed state | [Plan model](plan-model.md) |
 | Preparation/execution lifecycle | [Deployment lifecycle](deployment-lifecycle.md) |
 | Audit and evidence | [Logging and evidence](logging-evidence.md) |

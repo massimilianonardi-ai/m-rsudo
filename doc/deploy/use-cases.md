@@ -18,3 +18,5 @@
 | UC-12 | Unattended run meets a blocker or partial failure. | Deterministic stop/reconciliation/report per approved policy; no implicit destructive rerun. | Principle approved; policy pending |
 
 **First representative application:** HTML/JS/CSS app made available through existing nginx/APISIX/Keycloak estate; exact topology, route ownership and policy model still require evidence/approval.
+
+See [SCN-01](scenario-01-functional.md) and [representative acceptance cases](scenario-01-acceptance.md) for the first concrete scenario refinement, pending operator review.
