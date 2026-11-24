@@ -30,7 +30,12 @@ This file supersedes overbroad wording of REQ-03 from the first interface slice.
 | REQ-19 | Ready-to-copy static content from local Git or private intranet bare Git; bare Git authoritative; no build process. | Pending |
 | REQ-20 | Deployment authoritative for infrastructure resources including APISIX/Keycloak, except explicitly permitted ordinary association management; initial export required, no automatic drift remediation. | Pending |
 
-See [scenario decisions](scenario-01-decisions.md) for remaining scope questions and proposed engineering contracts.
+| REQ-21 | Deployment manages the cloaker; APISIX entrance is an app menu; ordinary apps are exposed only through APISIX paths; protected direct APISIX access is valid. | Pending |
+| REQ-22 | Preserve current public HTTPS and HTTP APISIX-to-nginx baseline; alternative topology/internal TLS assessed separately. | Pending |
+| REQ-23 | Support AD and local Keycloak users/groups; group administration is not exclusive to deployment; preserve D02 association and structural ownership boundaries. | Pending |
+| REQ-24 | Initial export acquires infrastructure/global and application configuration levels; write support is incremental. | Pending |
+
+See [scenario decisions](scenario-01-decisions.md) for D01–D08 and [resource model](resource-model.md) for proposed engineering contracts.
 
 ## Proposals pending detailed architecture
 

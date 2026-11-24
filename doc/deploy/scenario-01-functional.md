@@ -1,12 +1,12 @@
 # SCN-01 — deploy a protected static web application
 
-**Status:** L2–L3 refined with approved D01–D04; narrow residual questions remain (2026-11-24). Approved parent scope: [objectives](objectives.md), [requirements](requirements.md), [initial scenario](initial-scenario.md). Existing products are not reconfigured or installed by this specification.
+**Status:** L2–L3 refined with approved D01–D08; actual configuration discovery pending (2026-11-24). Approved parent scope: [objectives](objectives.md), [requirements](requirements.md), [initial scenario](initial-scenario.md). Existing products are not reconfigured or installed by this specification.
 
 ## Functional result
 
 A project describes one or more HTML/JS/CSS applications. A selected application can be hosted through an existing nginx instance, exposed at its desired URL via an existing APISIX instance, and accessed only under the required Keycloak-backed identity and authorization policy. Treat application as a logical aggregation, not necessarily as the exclusive owner of all involved resources. Existing instances and shared resources can be referenced.
 
-Operator-described topology: browser -> HTTPS cloaker/iframe -> public APISIX entry -> nginx origin; separate publicly reachable Keycloak authenticates against Active Directory and holds the existing APISIX client authorization configuration. All public URLs use HTTPS, HTTP redirects. Only APISIX reaches separate application origins; colocated nginx binds loopback. This is reported architecture, not live verification. Exact enforcement mechanism remains to be inspected. See [D01–D04](scenario-01-decisions.md).
+Operator-described topology: browser -> HTTPS cloaker/iframe -> public APISIX entry -> nginx origin; separate publicly reachable Keycloak authenticates against Active Directory and holds the existing APISIX client authorization configuration. All public URLs use HTTPS, HTTP redirects. Only APISIX reaches separate application origins; colocated nginx binds loopback. This is reported architecture, not live verification. Exact enforcement mechanism remains to be inspected. APISIX entrance is an application menu; protected direct APISIX paths are valid, ordinary applications have no direct origin exposure. Cloaker is deployment-managed, exact host unknown. APISIX-to-nginx currently HTTP; public endpoints use HTTPS. AD and local Keycloak identities/groups coexist. See [D01–D08](scenario-01-decisions.md).
 
 ## Logical information model (not a schema)
 
@@ -50,4 +50,4 @@ The operations are semantics, not proposed CLI verbs. Local operations must not 
 
 ## Boundary of this iteration
 
-No final JSON layout, OIDC/plugin choice, realm model, nginx layout, route naming, deployment transaction or CLI grammar. The four choice groups are answered in [scenario decisions](scenario-01-decisions.md); narrower residual questions and read-only discovery remain before dependent implementation. [Acceptance](scenario-01-acceptance.md) defines candidate observable outcomes and [dependency contracts](scenario-01-dependencies.md) records actual inspected capabilities.
+No final JSON layout, OIDC/plugin choice, realm model, nginx layout, route naming, deployment transaction or CLI grammar. D01–D08 are answered in [scenario decisions](scenario-01-decisions.md). See [resource model](resource-model.md) and [initial acquisition](initial-acquisition.md) for proposed architecture work; actual read-only discovery and review remain before dependent implementation. [Acceptance](scenario-01-acceptance.md) defines candidate observable outcomes and [dependency contracts](scenario-01-dependencies.md) records actual inspected capabilities.

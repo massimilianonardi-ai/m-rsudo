@@ -29,3 +29,7 @@ Resources may have references/dependencies; the exact JSON directory structure, 
 - Secrets are outside JSON and resolved only through rsudo's established model.
 
 See [lifecycle](deployment-lifecycle.md) for proposed state transitions.
+
+## Resource model refinement
+
+See [resource-model](resource-model.md) for conceptual areas, authority classes and dependency semantics; see [initial-acquisition](initial-acquisition.md) for the read-only import boundary. This does not fix the JSON schema.

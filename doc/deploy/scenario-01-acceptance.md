@@ -17,7 +17,7 @@
 | SCN-A11 | Existing/shared resource or third-party change | Conflict or drift reported; no implicit takeover, deletion or overwriting outside approved ownership |
 | SCN-A12 | Long-running/unattended plan | Authorized scope and durable precise logs; no secrets disclosed; verify each material action/result; no prompts unless operation explicitly interactive |
 
-The exact login flow, denial status, identities, URL patterns and transport boundary remain to be verified against approved D01–D04. Do not equate a successful administrative response with correct public access. An unreachable verification target produces an inconclusive outcome, not a verified deployment.
+The exact login flow, denial status, identities, URL patterns and transport boundary remain to be verified against approved D01–D08. Do not equate a successful administrative response with correct public access. An unreachable verification target produces an inconclusive outcome, not a verified deployment.
 
 ## Additional candidate checks derived from D01–D04
 
@@ -25,9 +25,20 @@ The exact login flow, denial status, identities, URL patterns and transport boun
 | --- | --- | --- |
 | SCN-A13 | Browser entry and HTTP redirect | HTTP redirects to HTTPS; cloaker embeds intended APISIX entrance; approved browser login flow completes and app renders |
 | SCN-A14 | Direct access and origin isolation | Direct APISIX URL enforces same access policy; external direct origin access blocked; separate origin accepts application requests from APISIX only, or colocated origin listens on loopback |
-| SCN-A15 | Existing identity integration | Dedicated realm and AD-backed login preserved; current client roles/path/permissions function as intended |
-| SCN-A16 | Ordinary Webadmin assignment change | Legitimate operational assignment change is not silently reverted by unrelated deployment (proposed detailed policy, Q03) |
+| SCN-A15 | Existing identity integration | Dedicated realm and AD-backed/local Keycloak login preserved; current client roles/path/permissions function as intended |
+| SCN-A16 | Ordinary Webadmin assignment change | Legitimate operational assignment change is not silently reverted by unrelated deployment (proposed detailed policy, D07) |
 | SCN-A17 | Git content preparation | Exact reviewed content is published even if source branch advances during execution (proposed revision binding) |
 | SCN-A18 | Initial export/import | No remote writes; managed configuration represented in reviewed project; secrets/runtime state excluded from plain project; unexplained differences block initial apply (proposed procedure) |
 
 No checks executed; browser iframe authentication/session behavior must be verified in authorized environment, not assumed.
+
+## D05–D08 refinements
+
+| ID | Candidate verification | Expected result |
+| --- | --- | --- |
+| SCN-A19 | Cloaker, application menu, direct path | Cloaker loads intended menu, authorized direct paths remain valid, no alternative direct-origin exposure |
+| SCN-A20 | Transport boundary | Public URLs protected by HTTPS and redirects; current upstream HTTP restricted to APISIX; do not claim internal encryption |
+| SCN-A21 | Identity provenance and ordinary group changes | Distinguish local and federated identities/groups; do not implicitly overwrite group/association changes in an unrelated deploy |
+| SCN-A22 | Acquisition coverage | Global and application configuration inventoried, every unknown/unsupported category explicitly reported, no remote writes |
+
+These checks are proposed, not executed. The scope is approved; detailed expected responses, test identities and actual capability remain to be observed.

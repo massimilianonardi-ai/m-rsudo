@@ -23,3 +23,7 @@ Review [initial scenario](initial-scenario.md), [plan model](plan-model.md), [li
 ## Scenario decisions at checkpoint 13
 
 SCN-D01–D04 are materially approved: current cloaker/APISIX/Keycloak/nginx topology; TLS certificate scope (timing open); existing AD-backed identity; deployment-only structural authorization configuration with ordinary Webadmin assignments; bare Git source; exclusive infrastructure resource authority and initial export. See [canonical decision review](scenario-01-decisions.md). The former proposed managed-subset-only default is rejected. Remaining questions Q01–Q04 and implementation proposals are not silently approved.
+
+## Scenario decisions at checkpoint 14
+
+D05–D08 approved: deployment-managed cloaker, APISIX app menu, path-only app exposures with valid protected direct APISIX access; public HTTPS/current internal HTTP; local and federated users/groups, group administration nonexclusive; acquire both global and app settings initially. The four residual questions from checkpoint 13 are closed at functional level. Runtime details remain discovery facts, not operator decisions. [Resource model](resource-model.md) and [initial acquisition](initial-acquisition.md) are proposals, not implementation authority.
