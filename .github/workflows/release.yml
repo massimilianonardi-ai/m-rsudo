@@ -27,7 +27,7 @@ jobs:
           set -eu
           sh -n build.sh
           ! grep -q 'set -o pipefail' lib/sys/sh/rsudo/rsudo-mod-fs.lib.sh
-          sh .github/scripts/rsudo-apisix-traditional-test.sh
+          sh -x .github/scripts/rsudo-apisix-traditional-test.sh
           sh .github/scripts/rsudo-keycloak-kcadm-test.sh
           sh tests/deploy-entrypoints.sh
           sh build.sh release

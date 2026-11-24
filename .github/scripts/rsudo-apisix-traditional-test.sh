@@ -81,9 +81,17 @@ got=$(rsudo_mod_apisix_key "$tmp/conf space/config.yaml")
 [ "$got" = custom-admin-key ]
 # Explicit regression boundary: preserve the original greedy extraction,
 # including the known ambiguity of a later role: admin in the YAML.
-sed '/key: custom-admin-key/a\\
+cat > "$tmp/role.yaml" <<'APISIX_ROLE_CONFIG'
+deployment:
+  admin:
+    admin_key:
+      - name: admin
+        key: custom-admin-key
         role: admin
-' "$tmp/conf space/config.yaml" > "$tmp/role.yaml"
+      - name: viewer
+        key: viewer-key
+        role: viewer
+APISIX_ROLE_CONFIG
 legacy_role_result=$(rsudo_mod_apisix_key "$tmp/role.yaml")
 [ "$legacy_role_result" = '-name:viewer' ]
 APISIX_KEY=$got
