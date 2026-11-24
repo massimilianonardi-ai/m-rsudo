@@ -65,7 +65,7 @@ set -e
 [ "$missing_rc" -eq 64 ]
 [ "$path_rc" -eq 64 ]
 
-# Exercise a standard APISIX Traditional admin_key block.
+# Exercise the original legacy-compatible admin_key layout.
 mkdir -p "$tmp/conf space"
 cat > "$tmp/conf space/config.yaml" <<'APISIX_CONFIG'
 deployment:
@@ -73,13 +73,19 @@ deployment:
     admin_key:
       - name: admin
         key: custom-admin-key
-        role: admin
       - name: viewer
         key: viewer-key
         role: viewer
 APISIX_CONFIG
 got=$(rsudo_mod_apisix_key "$tmp/conf space/config.yaml")
 [ "$got" = custom-admin-key ]
+# Explicit regression boundary: preserve the original greedy extraction,
+# including the known ambiguity of a later role: admin in the YAML.
+sed '/key: custom-admin-key/a\\
+        role: admin
+' "$tmp/conf space/config.yaml" > "$tmp/role.yaml"
+legacy_role_result=$(rsudo_mod_apisix_key "$tmp/role.yaml")
+[ "$legacy_role_result" = '-name:viewer' ]
 APISIX_KEY=$got
 got=$(rsudo_mod_apisix_rest GET upstreams)
 printf '%s\n' "$got" | grep -Fqx 'KEY:X-API-KEY: custom-admin-key'

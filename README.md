@@ -8,7 +8,7 @@ secrets are stored in this repository.
 The immutable `v0.1.0`, `v0.1.1`, `v0.1.2` and `v0.1.3` GitHub releases were
 built from their respective source revisions. `pkg-catalog/pkg-schema-v2`
 records their exact separate versions and command/library projections.
-The current `build.sh` emits a distinct `v0.1.4` archive; previous release
+The current `build.sh` emits a distinct `v0.1.5` archive; previous release
 assets must never be replaced.
 
 `rsudo` uses the separately installed `m-core` shell libraries. For
@@ -66,3 +66,7 @@ by the distinct `r1-installed-v013` Ubuntu/macOS workflow.
 APISIX exposes `rsudo apisix rest METHOD RESOURCE [BODY]` and `key`; the older APISIX helpers remain in `apisixlegacy`. Keycloak exposes `rsudo keycloak kcadm ...`; legacy Keycloak is no longer packaged. These are interface changes from v0.1.3. The package also contains Keysix help and the initial rsudo-deploy menu/entrypoint wiring; the full deployment CLI and engine remain unfinished. No live acceptance is claimed.
 
 Select the installed v0.1.4 concrete for the new interfaces. See the module manuals and doc/deploy for details.
+
+## v0.1.5 — restore original APISIX key extraction
+
+Restores the original `apisixlegacy` cat/sed/tr pipeline in `rsudo apisix key`, preserving its layout assumptions. Only the remote config path is parameterized; existing readability and empty-result checks remain. A later `role: admin` can affect the legacy greedy match; this is not a general YAML parser. No changes to REST, Keycloak, legacy modules or deployment runtime.

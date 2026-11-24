@@ -36,20 +36,20 @@ jobs:
           test -f release/root/lib/sh/rsudo-mod-apisixlegacy.lib.sh
           test ! -e release/root/lib/sh/rsudo-mod-keycloaklegacy.lib.sh
           cd release
-          sha256sum m-rsudo-v0.1.4-all.tar.gz > SHA256SUMS
+          sha256sum m-rsudo-v0.1.5-all.tar.gz > SHA256SUMS
           sha256sum -c SHA256SUMS
-          tar -tzf m-rsudo-v0.1.4-all.tar.gz | grep -q '^bin/'
-          tar -tzf m-rsudo-v0.1.4-all.tar.gz | grep -q '^lib/sh/'
-      - name: Publish immutable v0.1.4 only if absent
+          tar -tzf m-rsudo-v0.1.5-all.tar.gz | grep -q '^bin/'
+          tar -tzf m-rsudo-v0.1.5-all.tar.gz | grep -q '^lib/sh/'
+      - name: Publish immutable v0.1.5 only if absent
         env:
           GH_TOKEN: ${{ github.token }}
         shell: sh
         run: |
           set -eu
-          if gh release view v0.1.4 >/dev/null 2>&1; then
-            echo 'v0.1.4 exists, refusing to replace the immutable release'
+          if gh release view v0.1.5 >/dev/null 2>&1; then
+            echo 'v0.1.5 exists, refusing to replace the immutable release'
             exit 0
           fi
-          gh release create v0.1.4 release/m-rsudo-v0.1.4-all.tar.gz release/SHA256SUMS \
-            --target "$GITHUB_SHA" --title 'm-rsudo v0.1.4' \
-            --notes 'Native APISIX rest/key and Keycloak kcadm interfaces; legacy APISIX remains available, legacy Keycloak no longer packaged. Initial rsudo-deploy interface wiring only, not a complete deployment engine. Local synthetic tests and archive checks; real SSH/sudo and API acceptance still require operator testing.'
+          gh release create v0.1.5 release/m-rsudo-v0.1.5-all.tar.gz release/SHA256SUMS \
+            --target "$GITHUB_SHA" --title 'm-rsudo v0.1.5' \
+            --notes 'Restore the original APISIX legacy admin-key extraction pipeline, parameterizing only the remote path and retaining existing transport and empty-result check. Legacy layout assumptions remain. Other runtime modules unchanged.'

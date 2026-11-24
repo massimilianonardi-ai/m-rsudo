@@ -56,4 +56,4 @@ jobs:
           test ! -e release/root/lib/sh/rsudo-mod-keycloaklegacy.lib.sh
           test ! -e release/root/res/manual/rsudo-mod-keycloaklegacy.lib.sh
           test -f release/root/res/manual/rsudo-mod-keycloak.lib.sh
-          tar -tzf release/m-rsudo-v0.1.4-all.tar.gz >/dev/null
+          tar -tzf release/m-rsudo-v0.1.5-all.tar.gz >/dev/null

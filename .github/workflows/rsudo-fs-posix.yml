@@ -37,7 +37,7 @@ jobs:
           fi
           sh -n build.sh
           sh build.sh release
-          test -f release/m-rsudo-v0.1.4-all.tar.gz
+          test -f release/m-rsudo-v0.1.5-all.tar.gz
           cmp lib/sys/sh/rsudo/rsudo-mod-fs.lib.sh release/root/lib/sh/rsudo-mod-fs.lib.sh
           sh -n release/root/lib/sh/rsudo-mod-fs.lib.sh
-          tar -tzf release/m-rsudo-v0.1.4-all.tar.gz >/dev/null
+          tar -tzf release/m-rsudo-v0.1.5-all.tar.gz >/dev/null

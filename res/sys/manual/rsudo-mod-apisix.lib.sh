@@ -12,7 +12,7 @@ DESCRIPTION
     REST resource helper APIs are installed or implemented.
 
     The key operation reads the admin key from a remote APISIX config.yaml
-    using the original legacy extraction approach, adapted to accept an
+    using the original legacy extraction pipeline, adapted to accept an
     absolute remote path. The key is printed to stdout for capture.
 
     The independent rsudo-mod-apisixlegacy.lib.sh remains unchanged and
@@ -72,7 +72,10 @@ SECURITY / BOUNDARIES
     Avoid debugging mechanisms that log stdin or generated shell source.
 
     Requires a POSIX shell plus curl (including -H @/dev/fd/3) on the
-    remote target. The key extraction uses the existing POSIX awk utility.
+    remote target. The key extraction uses the original legacy cat/sed/tr pipeline.
+    It assumes the legacy config layout (name: admin followed by key).
+    A later role: admin can change the greedy legacy match; it is not a
+    general YAML parser.
     The module does not verify the active APISIX deployment mode: only
     Traditional is supported by contract. No real remote deployment or
     live APISIX behavior is claimed solely from mock tests.
