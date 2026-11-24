@@ -1,0 +1,40 @@
+name: Verify rsudo-deploy interface wiring
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'bin/sys/rsudo-deploy'
+      - 'bin/sys/rsudo-admin'
+      - 'lib/sys/sh/rsudo/rsudo-deploy.lib.sh'
+      - 'lib/sys/sh/rsudo/rsudo-mod-deploy.lib.sh'
+      - 'tests/deploy-entrypoints.sh'
+      - 'build.sh'
+      - '.github/workflows/rsudo-deploy-entrypoints.yml'
+  pull_request:
+    paths:
+      - 'bin/sys/rsudo-deploy'
+      - 'bin/sys/rsudo-admin'
+      - 'lib/sys/sh/rsudo/rsudo-deploy.lib.sh'
+      - 'lib/sys/sh/rsudo/rsudo-mod-deploy.lib.sh'
+      - 'tests/deploy-entrypoints.sh'
+      - 'build.sh'
+      - '.github/workflows/rsudo-deploy-entrypoints.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  local-interface:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check deployment interfaces without remote credentials
+        shell: sh
+        run: sh tests/deploy-entrypoints.sh
