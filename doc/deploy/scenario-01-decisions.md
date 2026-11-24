@@ -1,21 +1,26 @@
-# SCN-01 — operator decision review
+# SCN-01 — decisions and remaining boundaries
 
-**Status:** proposed alternatives for review, not approved. Earlier confirmed product/module restrictions remain binding.
+**Authority:** explicit operator clarification, 2026-11-24, conversation checkpoint 13. D01–D04 materially answered; remaining questions below are narrower. No runtime verification or authorization to modify servers.
 
-## SCN-D01 — actual network and hosting topology
+## SCN-D01 — network and hosting (approved)
+- One intended user entry point: minimal HTML URL cloaker containing an iframe pointing to an APISIX entrance URL.
+- HTTP redirects to HTTPS; URLs are HTTPS. APISIX and Keycloak are distinct publicly reachable servers, currently not behind a reverse proxy. Keep current topology for initial scope. A different reverse proxy architecture is future investigation, not prerequisite.
+- Other apps are reachable only via APISIX. For a separate nginx origin, application connections must be allowed only from APISIX; for colocated nginx, bind to 127.0.0.1. nginx currently separate. DNS is a prerequisite already satisfied. TLS certificates belong to deployment scope, possibly deferred in initial slice.
+- Cloaker is presentation, not authorization. Direct requests to protected APISIX URLs must still be protected.
 
-Proposed first scenario: APISIX is the public gateway, nginx serves content behind it, Keycloak is an existing identity provider. Need confirm whether instances are already linked, whether app URLs use hostnames, path prefixes or both, whether nginx origins are already inaccessible directly to external users, and whether DNS/TLS are pre-existing prerequisites. Do not design an installation or assume particular server layout. Recommend existing DNS/TLS and explicit desired full URL per exposure for first scope; support multiple instances via explicit references.
+## SCN-D02 — identity and access (approved)
+Existing dedicated Keycloak realm authenticates via Active Directory. Existing APISIX client has path/resource-specific permissions and roles associated with some APISIX routes. Deployment exclusively manages roles, paths and permissions. Deployment must support user/group/role associations, while routine association administration uses Keycloak Webadmin. Preserve existing identity/auth integration. No replacement plugin or authorization mechanism chosen.
 
-## SCN-D02 — authentication and authorization semantics
+## SCN-D03 — content (approved)
+Ready-to-copy static files, no build, originate in a local Git working repository pushed to a private intranet bare Git repository. Bare repository is authoritative for sources; either source may be used for acquisition. **Proposed:** bind preparation to an exact revision/content fingerprint; never silently switch revisions during a long apply.
 
-Proposed: access is enforced before protected HTML/JS/CSS are delivered, not by client-side JS. Keycloak defines identities and entitlement, with actual enforcement selected after checking current integration. Need decide whether existing realm(s), clients, groups/roles are merely referenced, or deployment may create/manage those objects; whether user lifecycle/membership is part of deployment or administered separately. Recommend existing realm and users, declare desired access policy per app and explicitly scoped app-related identity resources; no automatic identity deletion. Exact OIDC, plugin or authorization mechanism is not a design assumption.
+## SCN-D04 — authority (approved)
+Deployment exclusively manages infrastructure resources, notably APISIX and Keycloak; the explicit ordinary association-management exception from D02 remains. First export existing configurations. Supersedes proposed managed-subset-only default. Authority does not imply that absence authorizes deletion or automatic drift repair. Selected deployments remain supported.
 
-## SCN-D03 — content ownership and hosting
+## Remaining operator questions
+- Q01: cloaker hosting and ownership, APISIX entry application/navigation, URL patterns (host/path or both). Is the cloaker included in initial deployment, or an existing prerequisite?
+- Q02: does HTTPS-only extend to APISIX-to-nginx upstream connections, including loopback, or only browser/public URLs? Certificates needed for initial deployment versus later automated lifecycle.
+- Q03: whether group definitions/AD group mappings and users are deployment-managed or existing identity infrastructure; proposed policy: only explicitly requested association changes, routine Webadmin changes preserved and not mistaken for unauthorized structural drift.
+- Q04: scope of initial export and transition: proposed read-only inventory/export for all managed configurations, then normalized reviewable initial project, separate observed/runtime/derived data and protected secret references. Are global product/identity integration settings included immediately or inventoried and deferred? No implicit removal or changes during import.
 
-Proposed: first support an explicitly chosen local directory of ready-to-publish static files (or artifact reference if that better reflects actual use), map to a defined managed nginx hosting location. No build pipeline, source-code checkout or general package installation assumed. Need choose whether an app already exists remotely and is reference-only, whether deploy copies/updates the content, or both. For owned content verify fingerprint, path permissions and update scope; do not overwrite shared directories.
-
-## SCN-D04 — ownership of existing remote resources
-
-Proposed: default to explicit managed set, reference existing shared objects without changing them, require deliberate adoption of existing objects before taking ownership, and explicit removal authorization. Absence from project is not blanket permission to delete. Need confirm whether this matches operational model or whether the operator intends the project to be authoritative for a whole instance. Default safe scope does not settle future delete/unpublish semantics or rollback policy.
-
-These four decisions shape functional acceptance and data model. Other engineering details can be derived independently after evidence gathering: exact schema/CLI, operation interfaces, freshness checks, log storage, retry/partial recovery. No remote access or existing product modifications authorized by this review.
+These are functional scope decisions, not requests for technical implementation details. Exact versions, paths, plugins, current configuration and topology details should be discovered through a separately authorized read-only collection; no real hostnames, credentials or exports in public repositories.

@@ -1,12 +1,12 @@
 # SCN-01 — deploy a protected static web application
 
-**Status:** proposed L2–L3 functional specification for operator review, 2026-11-24. Approved parent scope: [objectives](objectives.md), [requirements](requirements.md), [initial scenario](initial-scenario.md). Existing products are not reconfigured or installed by this specification.
+**Status:** L2–L3 refined with approved D01–D04; narrow residual questions remain (2026-11-24). Approved parent scope: [objectives](objectives.md), [requirements](requirements.md), [initial scenario](initial-scenario.md). Existing products are not reconfigured or installed by this specification.
 
 ## Functional result
 
 A project describes one or more HTML/JS/CSS applications. A selected application can be hosted through an existing nginx instance, exposed at its desired URL via an existing APISIX instance, and accessed only under the required Keycloak-backed identity and authorization policy. Treat application as a logical aggregation, not necessarily as the exclusive owner of all involved resources. Existing instances and shared resources can be referenced.
 
-Proposed logical traffic flow: browser -> public URL -> APISIX -> nginx -> content; Keycloak provides identity and authorization data to the actual enforcement mechanism, which is not yet chosen. No topology, plugin or deployment layout is asserted as fact.
+Operator-described topology: browser -> HTTPS cloaker/iframe -> public APISIX entry -> nginx origin; separate publicly reachable Keycloak authenticates against Active Directory and holds the existing APISIX client authorization configuration. All public URLs use HTTPS, HTTP redirects. Only APISIX reaches separate application origins; colocated nginx binds loopback. This is reported architecture, not live verification. Exact enforcement mechanism remains to be inspected. See [D01–D04](scenario-01-decisions.md).
 
 ## Logical information model (not a schema)
 
@@ -43,11 +43,11 @@ The operations are semantics, not proposed CLI verbs. Local operations must not 
 
 1. Create a project and reference the required existing instances; define one app, its content, exposure and policy.
 2. Validate local references and content. Observe managed resources and relevant shared resources; establish access and capability prerequisites.
-3. Compare, classify existing resources (owned, explicitly adoptable, reference-only, conflict, unknown), identify blockers, and prepare only necessary changes.
+3. Before ordinary deployment, acquire existing managed configurations read-only and review the initial project. Compare approved desired state against observations, including explicit operational association exceptions; identify blockers and prepare only necessary selected changes. No automatic deletion or reconciliation.
 4. Review scope and dependencies, authorize changes. Stage content and required identity/access configuration before making a new public exposure active; for existing routes use a separately justified safe transition, never assume atomicity.
 5. Apply with per-action precondition and result evidence. A failed dependency blocks affected steps; ambiguous effects require readback and human review, not blind retry.
 6. Independently verify configuration, exact expected content and effective access rules at all relevant paths. Report residual drift; do not auto-correct.
 
 ## Boundary of this iteration
 
-No final JSON layout, OIDC/plugin choice, realm model, nginx layout, route naming, deployment transaction or CLI grammar. The four choice groups in [scenario decisions](scenario-01-decisions.md) are needed before architecture/implementation of dependent paths. [Acceptance](scenario-01-acceptance.md) defines candidate observable outcomes and [dependency contracts](scenario-01-dependencies.md) records actual inspected capabilities.
+No final JSON layout, OIDC/plugin choice, realm model, nginx layout, route naming, deployment transaction or CLI grammar. The four choice groups are answered in [scenario decisions](scenario-01-decisions.md); narrower residual questions and read-only discovery remain before dependent implementation. [Acceptance](scenario-01-acceptance.md) defines candidate observable outcomes and [dependency contracts](scenario-01-dependencies.md) records actual inspected capabilities.

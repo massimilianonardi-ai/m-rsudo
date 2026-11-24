@@ -19,3 +19,7 @@
 **Proposed, not yet accepted:** exact resource JSON schema and identifier model; user-facing CLI verb hierarchy; route/authz policy representation; preflight snapshot freshness and plan approval token; retry/resume semantics; any per-resource transactional guarantees. Do not silently substitute these for approved decisions.
 
 Review [initial scenario](initial-scenario.md), [plan model](plan-model.md), [lifecycle](deployment-lifecycle.md), [logging](logging-evidence.md) before implementing them.
+
+## Scenario decisions at checkpoint 13
+
+SCN-D01–D04 are materially approved: current cloaker/APISIX/Keycloak/nginx topology; TLS certificate scope (timing open); existing AD-backed identity; deployment-only structural authorization configuration with ordinary Webadmin assignments; bare Git source; exclusive infrastructure resource authority and initial export. See [canonical decision review](scenario-01-decisions.md). The former proposed managed-subset-only default is rejected. Remaining questions Q01–Q04 and implementation proposals are not silently approved.

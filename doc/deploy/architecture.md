@@ -25,6 +25,6 @@ Native `rsudo deploy <args>` is **only one remote-operation adapter**. Other exi
 
 The desired **project** may be edited/revised in stages without accessing a server. A chosen revision/selection is compared with observed state before forming a proposed execution plan. An approved prepared plan is applied, then independently verified. Drift does **not** automatically mutate the desired project or trigger apply.
 
-A possible initial request flow is static files on nginx through APISIX routes protected using Keycloak-backed identity/authorization. **Exact placement of access enforcement and topology is unresolved**; do not assume a particular APISIX plugin or admin API without inspecting the estate.
+The operator confirmed intended HTTPS cloaker/iframe entry -> public APISIX -> restricted nginx origin, with publicly reachable Keycloak on a distinct server and existing AD-backed realm and authorization client. See [scenario decisions](scenario-01-decisions.md). Exact plugin/enforcement and upstream TLS boundary are not yet verified; do not replace the existing topology or assume a particular mechanism. Deployment is authoritative for managed infrastructure, with the explicit ordinary Keycloak association exception.
 
 For per-component ownership see [components](components.md); for preparation/long execution see [lifecycle](deployment-lifecycle.md). All source diagrams are design intent unless tagged implemented.

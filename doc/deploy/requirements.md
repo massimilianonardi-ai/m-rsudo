@@ -20,6 +20,18 @@ This file supersedes overbroad wording of REQ-03 from the first interface slice.
 | REQ-14 | Destructive changes and unattended operations need explicit, noninteractive authorization; exact policy pending design. | Principle approved | Policy pending |
 | REQ-15 | Encountered defects or missing features in protected rsudo modules or other tools become **independent tasks**; deployment design may define needed contracts but cannot silently edit those components. | Approved | Enforced by scope |
 
+## Scenario refinements approved (2026-11-24)
+
+| ID | Requirement | Delivery state |
+| --- | --- | --- |
+| REQ-16 | Single intended user entry via minimal HTML cloaker/iframe to APISIX; HTTPS URLs, HTTP redirect; public distinct APISIX/Keycloak, no new reverse proxy prerequisite. | Pending |
+| REQ-17 | Application origins accessible via APISIX only; separate nginx allows app connections from APISIX only; colocated nginx binds 127.0.0.1. DNS pre-existing; TLS certificates within deployment scope, potentially later increment. | Pending |
+| REQ-18 | Preserve dedicated realm/AD integration and existing APISIX client authorization model; roles, paths and permissions exclusively deployment-managed; association changes supported by deployment and ordinarily performed in Webadmin. | Pending |
+| REQ-19 | Ready-to-copy static content from local Git or private intranet bare Git; bare Git authoritative; no build process. | Pending |
+| REQ-20 | Deployment authoritative for infrastructure resources including APISIX/Keycloak, except explicitly permitted ordinary association management; initial export required, no automatic drift remediation. | Pending |
+
+See [scenario decisions](scenario-01-decisions.md) for remaining scope questions and proposed engineering contracts.
+
 ## Proposals pending detailed architecture
 
 - Directory-based structured JSON project with stable identities, references, and revision/fingerprint per executable plan; no final JSON schema yet.

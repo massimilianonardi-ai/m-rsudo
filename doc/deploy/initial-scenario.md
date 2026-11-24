@@ -10,18 +10,12 @@
 4. Verify for selected test identities that eligible access works, unauthenticated access is challenged/denied, and unauthorized access is denied.
 5. Record actual routes, target endpoints, app version/content fingerprint, identity/policy binding and residual drift as evidence, subject to later detailed schemas.
 
-## Non-assumptions / decisions required before implementation
+## Approved scenario refinements
 
-- Actual traffic path and whether nginx hosts static files behind APISIX, direct externally accessible nginx routes, or other arrangement.
-- Which component **enforces** authorization (APISIX gateway, nginx, application endpoint, or combinations) and how Keycloak clients, roles, scopes and tokens map to apps.
-- Ownership of existing Keycloak realm/client/role objects and APISIX routes/upstreams; ability to observe/update them via current modules, without changing those modules.
-- The source and lifecycle of static files, URL/DNS/TLS endpoints, target server naming and access boundaries; no hostnames/secrets are published here.
-- In-place updates, maintenance windows, activation/rollback expectations, and which changes count as destructive.
+See [SCN-D01–D04](scenario-01-decisions.md): HTTPS cloaker/iframe entry, distinct public APISIX and Keycloak, restricted nginx origin, existing dedicated realm and AD-backed identity, existing client path/permission/role configuration, exclusive infrastructure configuration management with ordinary Webadmin association exception, authoritative bare Git source, initial export. No change to current topology is a prerequisite. Certificates remain in product scope; DNS is existing.
 
-**Security constraint:** Browser JavaScript cannot enforce server-side access controls or hold service credentials securely. If the public requirement is that the *static assets themselves* are access controlled, the public request path must enforce it before delivering those assets. This is an acceptance criterion, not an assumed plugin choice.
+Exact current configuration, runtime versions, enforcement, source layout and residual operator scope decisions must be established before dependent design. Browser JavaScript and URL cloaking are not access enforcement. No actual server access or test performed.
 
-**Dependency rule:** if the current apisix/keycloak/keysix/other tools cannot satisfy an identified contract, raise a separate task and wait for its result before using that capability.
+**Dependency rule:** identified missing capabilities become separate approved tasks, not modifications to protected modules here.
 
-## Detailed scenario review
-
-See [SCN-01 functional specification](scenario-01-functional.md), [verified source dependency contracts](scenario-01-dependencies.md), [candidate acceptance cases](scenario-01-acceptance.md) and [operator decision review](scenario-01-decisions.md). These proposals are not yet approved or implemented.
+See [functional specification](scenario-01-functional.md), [source dependency contracts](scenario-01-dependencies.md), [acceptance cases](scenario-01-acceptance.md) and [decisions](scenario-01-decisions.md).
