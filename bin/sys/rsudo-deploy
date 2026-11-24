@@ -10,5 +10,6 @@ fi
 
 # This menu does not require a remote target until an actual rsudo operation.
 # Resolve the library using the same selected m-rsudo package PATH as rsudo.
-. rsudo-deploy.lib.sh || exit 3
+. rsudo.lib.sh || exit 3
+. rsudo-deploy.lib.sh || exit 4
 rsudo_deploy_menu
