@@ -1,0 +1,66 @@
+name: Verify public m-rsudo v0.1.5 installation
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/r1-installed-v015.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: massimilianonardi-ai/m-os
+          ref: 359469c59633f90c5f81e7825712544a15467c37
+          path: m-source
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: massimilianonardi-ai/pkg-catalog
+          ref: b631e64ef396cbe8594de48aa35b946bf34ccae2
+          path: catalog
+          persist-credentials: false
+      - name: Install exact published package with real m pkg
+        shell: sh
+        run: |
+          set -eu
+          cd m-source
+          ./m osarch update
+          conf=$(./m state-path system sys pkg conf)
+          mkdir -p -- "$conf"
+          printf '%s\n' "$GITHUB_WORKSPACE/catalog" > "$conf/catalog"
+          ./m pkg install m-rsudo@v0.1.5
+          ./m sh -c '
+            set -eu
+            p="$m_PKG_DIR/m-rsudo@v0.1.5/link"
+            for f in "$p/bin/rsudo" "$p/bin/rsudo-admin" "$p/bin/rsudo-deploy"; do
+              test -L "$f" && test -x "$f"
+            done
+            for f in rsudo-mod-apisix rsudo-mod-keycloak rsudo-mod-deploy rsudo-mod-keysix rsudo-deploy; do
+              test -L "$p/lib/sh/$f.lib.sh" && test -r "$p/lib/sh/$f.lib.sh"
+            done
+            test ! -e "$p/lib/sh/rsudo-mod-keycloaklegacy.lib.sh"
+            grep -q "^rsudo_mod_apisix_rest()" "$p/lib/sh/rsudo-mod-apisix.lib.sh"
+            grep -q "^rsudo_mod_keycloak_kcadm()" "$p/lib/sh/rsudo-mod-keycloak.lib.sh"
+          '
+      - name: Diagnose integration definition if install failed
+        if: failure()
+        shell: sh
+        run: |
+          set -eu
+          cd m-source
+          work=$(mktemp -d)
+          trap 'rm -rf "$work"' 0
+          curl -fsSL https://github.com/massimilianonardi-ai/m-rsudo/releases/download/v0.1.5/m-rsudo-v0.1.5-all.tar.gz -o "$work/package.tar.gz"
+          mkdir "$work/root"
+          tar -xzf "$work/package.tar.gz" -C "$work/root"
+          tar -tvzf "$work/package.tar.gz"
+          RANGE="$GITHUB_WORKSPACE/catalog/v2/pkg/m-rsudo/all/n0006=v0.1.5" ROOT="$work/root" ./m sh -c '
+            loadsyslib pkg/pkg-integration || exit 1
+            set -x
+            _pkg_integration_v2_validate_definition "$RANGE" "$ROOT"
+          '
