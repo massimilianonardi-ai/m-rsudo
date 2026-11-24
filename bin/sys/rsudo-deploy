@@ -1,0 +1,14 @@
+#!/bin/sh
+# Standalone menu; arguments remain a thin wrapper for the native module.
+[ -n "${m_ROOT:-}" ] || { printf '%s\n' 'rsudo-deploy: m environment not initialized' >&2; exit 1; }
+. "$m_LIB_DIR/sys/sh/core.lib.sh" || { printf '%s\n' 'rsudo-deploy: m shell runtime unavailable' >&2; exit 2; }
+
+if [ "$#" -gt 0 ]
+then
+  exec rsudo deploy "$@"
+fi
+
+# This menu does not require a remote target until an actual rsudo operation.
+# Resolve the library using the same selected m-rsudo package PATH as rsudo.
+. rsudo-deploy.lib.sh || exit 3
+rsudo_deploy_menu

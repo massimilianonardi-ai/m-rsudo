@@ -7,7 +7,7 @@ output_root=$1
 self_dir=${0%/*}
 [ "$self_dir" != "$0" ] || self_dir=.
 command -p -- mkdir -p -- "$output_root/root/bin" "$output_root/root/lib/sh" "$output_root/root/res/manual"
-for name in rsudo rsudo-mod-exec rsudo-mod-fs rsudo-mod-db-pg rsudo-mod-apisix rsudo-mod-apisixlegacy rsudo-mod-keycloak rsudo-mod-keysix
+for name in rsudo rsudo-mod-exec rsudo-mod-fs rsudo-mod-db-pg rsudo-mod-apisix rsudo-mod-apisixlegacy rsudo-mod-keycloak rsudo-mod-keysix rsudo-mod-deploy rsudo-deploy
 do
   source_file="$self_dir/lib/sys/sh/rsudo/$name.lib.sh"
   [ -f "$source_file" ] && [ -r "$source_file" ] || exit 4
@@ -15,7 +15,7 @@ do
   command -p -- cp -- "$source_file" "$output_root/root/lib/sh/$name.lib.sh"
   command -p -- chmod 644 "$output_root/root/lib/sh/$name.lib.sh"
 done
-for name in rsudo rsudo-admin rssh
+for name in rsudo rsudo-admin rsudo-deploy rssh
 do
   source_file="$self_dir/bin/sys/$name"
   [ -f "$source_file" ] && [ -r "$source_file" ] || exit 6

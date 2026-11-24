@@ -507,6 +507,28 @@ rsudo_admin_encrypted_files()
   done
 }
 
+rsudo_admin_deploy()
+{
+  (
+    rsudo_admin_deploy_dir=$(rsudo_admin_package_library_dir m-rsudo) || exit 2
+    rsudo_admin_deploy_library="$rsudo_admin_deploy_dir/rsudo-deploy.lib.sh"
+    [ -f "$rsudo_admin_deploy_library" ] &&
+      [ -r "$rsudo_admin_deploy_library" ] || exit 2
+
+    . "$rsudo_admin_deploy_library" || exit 2
+    rsudo_deploy_menu
+  )
+  rsudo_admin_deploy_status=$?
+
+  if [ "$rsudo_admin_deploy_status" -eq 0 ]
+  then
+    rsudo_admin_message='Deployment menu closed.'
+  else
+    rsudo_admin_message="Deployment menu failed (status $rsudo_admin_deploy_status)."
+  fi
+  return 0
+}
+
 main()
 {
   [ "$#" -eq 0 ] || fatal 1 execution invalid-arguments operation rsudo-admin
@@ -525,7 +547,8 @@ main()
       'connect@:=Connect to host' \
       'browse@:=Browse host' \
       'jobs@:=rsudo jobs' \
-      'encrypted@:=Encrypted file load/edit/new')
+      'encrypted@:=Encrypted file load/edit/new' \
+      'deploy@:=Deployment')
     rsudo_admin_status=$?
 
     case "$rsudo_admin_status" in
@@ -544,6 +567,7 @@ main()
       browse) rsudo_admin_browse_host || return "$?" ;;
       jobs) rsudo_admin_jobs || return "$?" ;;
       encrypted) rsudo_admin_encrypted_files || return "$?" ;;
+      deploy) rsudo_admin_deploy || return "$?" ;;
       *) rsudo_admin_menu_failure ;;
     esac
   done
