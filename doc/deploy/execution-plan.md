@@ -3,8 +3,8 @@
 | Step | Deliverable | Done evidence | Status |
 | --- | --- | --- | --- |
 | STEP-01 | Approved integration architecture and scoped docs | Operator agreement + product docs | Done |
-| STEP-02 | Source-only menu library, native `deploy` module entry, standalone executable, one admin menu hook | Product source and package recipe | Initial implementation |
-| STEP-03 | Integration-only local syntax/menu/wrapper/package checks | Test outputs with actual files | Pending |
+| STEP-02 | Source-only menu library, native `deploy` module entry, standalone executable, one admin menu hook | Product source and package recipe | Implemented |
+| STEP-03 | Integration-only local syntax/menu/wrapper/package checks | [Ubuntu/macOS CI run](https://github.com/massimilianonardi-ai/m-rsudo/actions/runs/45345542189) | PASS for checked integration contracts |
 | STEP-04 | Specify directory-based JSON resources, identity, validation and state semantics | L1-L7 extended resource contracts | Pending |
 | STEP-05 | Implement one safe read-only end-to-end deployment view through rsudo | Actual output and focused tests | Pending |
 | STEP-06 | Add planned changes, user-approved safety controls, apply/verify and product-specific adapters | Repeatable tests and documented risks | Pending |
