@@ -1,6 +1,6 @@
 # rsudo-deploy — documentation index
 
-**Product:** `m-rsudo`. **Revision type:** specification update approved by operator, 2026-11-24. **Existing code baseline:** `05d1b08791a3f85c47b619a2f1169edbe5953332`. **Status:** entrypoint-only implementation exists; comprehensive deployment is not implemented.
+**Product:** `m-rsudo`. **Revision type:** approved functional specification and proposed acquisition design, 2026-11-24. **Existing code baseline:** `05d1b08791a3f85c47b619a2f1169edbe5953332`. **Status:** entrypoint-only implementation exists; comprehensive deployment is not implemented.
 
 This directory documents an **orchestrator** that uses the established `rsudo` model for remote work and local libraries for local work. Current executable still forwards every CLI argument to `rsudo deploy`; the approved updated CLI contract is **not implemented yet**.
 
@@ -13,7 +13,7 @@ This directory documents an **orchestrator** that uses the established `rsudo` m
 | System boundaries | [Architecture](architecture.md), [Components](components.md) |
 | CLI/API | [Interfaces](interfaces.md) |
 | First infrastructure scenario | [Initial scope](initial-scenario.md), [SCN-01 functional specification](scenario-01-functional.md), [dependencies](scenario-01-dependencies.md), [acceptance](scenario-01-acceptance.md), [approved scenario decisions D01–D08](scenario-01-decisions.md) |
-| Desired project and observed state | [Plan model](plan-model.md), [conceptual resource model](resource-model.md), [initial acquisition](initial-acquisition.md) |
+| Desired project and observed state | [Plan model](plan-model.md), [conceptual resource model](resource-model.md), [initial acquisition](initial-acquisition.md), [read operations](acquisition-operations.md), [acquisition evidence/checks](acquisition-evidence.md) |
 | Preparation/execution lifecycle | [Deployment lifecycle](deployment-lifecycle.md) |
 | Audit and evidence | [Logging and evidence](logging-evidence.md) |
 | Protected dependencies and task boundaries | [Component protection](component-protection.md) |
