@@ -16,5 +16,6 @@ The operator approved retaining the established rsudo credential architecture an
 - [Decisions](decisions.md) — approved choices and deferred questions.
 - [Tests](tests.md) — new integration checks only.
 - [Execution plan](execution-plan.md) — incremental completion path.
+- [Supervision](supervision.md) — checked milestone evidence.
 
 **Important:** rsudo authentication, decryption and unattended credential management are already-established product capabilities. This project does not redesign or re-validate those internals. New test scope is integration of deployment entrypoints and their expected shell scope.

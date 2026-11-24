@@ -1,0 +1,37 @@
+NAME
+    rsudo-deploy — independent interactive deployment menu and CLI wrapper
+
+SYNOPSIS
+    rsudo-deploy
+    rsudo-deploy operation [args...]
+
+DESCRIPTION
+    Without operands, starts the sourceable deployment menu.
+    With operands, executes: rsudo deploy operation [args...].
+    Native module entrypoint: rsudo [rsudo-options] deploy help.
+
+    The first integration slice supports selecting an already loaded
+    rsudo credential group, loading an encrypted credential file using the
+    established m-core mechanism, and displaying CLI usage. Real deployment
+    resource operations are not implemented yet.
+
+    rsudo-admin's Deploy menu source-loads rsudo-deploy.lib.sh in a subshell,
+    so groups already loaded into rsudo-admin remain available without export.
+    An independently launched rsudo-deploy has its own shell and must load
+    credential groups when needed.
+
+SECURITY
+    No new SSH/sudo or credential algorithm is provided. Remote administration
+    continues to use the established rsudo interfaces. Never place secrets
+    in plain deployment JSON.
+
+STATUS
+    Initial CLI/menu integration. Source builds and synthetic integration tests
+    passed on Ubuntu and macOS; no new immutable release or live deployment
+    has been accepted.
+
+SEE ALSO
+    rsudo-admin
+    rsudo
+    rsudo-mod-deploy.lib.sh
+    rsudo-deploy.lib.sh
